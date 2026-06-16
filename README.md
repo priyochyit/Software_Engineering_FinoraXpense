@@ -1,4 +1,4 @@
-# FinoraXpense — Personal Finance and Budget Tracker
+# FinoraXpense : Personal Finance and Budget Tracker
 
 FinoraXpense is a full-stack personal finance management web application built with Python Flask and PostgreSQL. It allows users to track their income and expenses, set monthly budgets, manage savings goals, and visualize their financial data through interactive charts. Transactions are automatically categorized using the Anthropic Claude AI API, and users can sign in with Google via OAuth 2.0.
 
