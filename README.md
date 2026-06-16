@@ -89,10 +89,6 @@ FinoraXpense/
 |   |-- style.css                     # Global stylesheet
 |   |-- uploads/
 |       |-- FinoraXpense_Logo.png     # Application logo
-|       |-- 330px-Mastercard_2019_logo.svg.png
-|       |-- 330px-PayPal.svg.png
-|       |-- 330px-UPI-Logo-vector.svg.png
-|       |-- 330px-Visa_Inc._logo_(2021-present).svg.png
 |       |-- avatars/                  # User profile pictures (auto-created at runtime)
 |
 |-- templates/
