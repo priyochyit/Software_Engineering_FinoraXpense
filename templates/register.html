@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register | FinoraXpense</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        
+        html {
+            -webkit-overflow-scrolling: touch; /* Added for ultra-smooth mobile scrolling */
+        }
+
+        :root {
+            --primary: #f58220; 
+            --bg: #ffffff;
+            --text-main: #0f172a;
+            --text-sub: #64748b;
+            --card: rgba(255, 255, 255, 0.8);
+            --border: rgba(0,0,0,0.06);
+            --glass: rgba(255, 255, 255, 0.8);
+        }
+
+        .dark-mode {
+            --bg: #020617;
+            --text-main: #f8fafc;
+            --text-sub: #94a3b8;
+            --card: rgba(15, 23, 42, 0.7);
+            --border: rgba(255,255,255,0.08);
+            --glass: rgba(2, 6, 23, 0.8);
+        }
+
+        body { 
+            background: var(--bg); 
+            color: var(--text-main); 
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            transition: background 0.5s ease, color 0.5s ease;
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+
+        * { cursor: none; box-sizing: border-box; }
+
+        #c-cursor { width: 8px; height: 8px; background: var(--primary); border-radius: 50%; position: fixed; top: 0; left: 0; pointer-events: none; z-index: 10000; will-change: transform; }
+        #c-follower { width: 40px; height: 40px; border: 1px solid var(--primary); border-radius: 50%; position: fixed; top: 0; left: 0; pointer-events: none; z-index: 9999; will-change: transform; }
+
+        .glass-card {
+            background: var(--card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 32px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+            transition: all 0.5s ease;
+        }
+
+        .input-group input,
+        .input-group select {
+            background: rgba(0, 0, 0, 0.03);
+            border: 1px solid var(--border);
+            transition: 0.3s;
+            color: var(--text-main);
+            width: 100%;
+        }
+
+        .dark-mode .input-group input,
+        .dark-mode .input-group select {
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-main);
+        }
+
+        .input-group input:focus,
+        .input-group select:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(245, 130, 32, 0.1);
+        }
+
+        .input-group select option {
+            background: var(--bg);
+            color: var(--text-main);
+        }
+
+        .feature-tag {
+            background: rgba(245, 130, 32, 0.05);
+            border: 1px solid rgba(245, 130, 32, 0.1);
+            transition: all 0.3s ease;
+        }
+        .feature-tag:hover { background: rgba(245, 130, 32, 0.1); transform: translateX(5px); }
+
+        .blob {
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(245, 130, 32, 0.08) 0%, transparent 70%);
+            z-index: -1;
+            filter: blur(80px);
+            animation: float 15s infinite alternate;
+        }
+
+        @keyframes float { 0% { transform: translate(0, 0); } 100% { transform: translate(5%, 5%); } }
+
+        .reveal { opacity: 0; transform: translateY(30px); transition: 1s cubic-bezier(0.2, 0.8, 0.2, 1); }
+        .reveal-visible { opacity: 1; transform: translateY(0); }
+
+        .btn-premium { background: var(--primary); color: white; transition: box-shadow 0.3s; }
+        .btn-premium:hover { box-shadow: 0 10px 30px rgba(245, 130, 32, 0.3); }
+
+        label.field-label {
+            display: block;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            margin-bottom: 6px;
+            margin-left: 4px;
+            color: var(--primary);
+        }
+
+        .form-input {
+            padding: 10px 16px;
+            border-radius: 14px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        /* NID digit counter badge */
+        .nid-counter {
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 20px;
+            transition: 0.3s;
+        }
+        .nid-neutral { background: rgba(100,116,139,0.1); color: var(--text-sub); }
+        .nid-valid   { background: rgba(34,197,94,0.12); color: #16a34a; }
+        .nid-invalid { background: rgba(239,68,68,0.1); color: #dc2626; }
+
+        /* Compact scrollbar for form overflow */
+        .form-scroll::-webkit-scrollbar { width: 4px; }
+        .form-scroll::-webkit-scrollbar-thumb { background: rgba(245,130,32,0.3); border-radius: 4px; }
+
+        @media (hover: none) and (pointer: coarse) {
+            #c-cursor, #c-follower { display: none !important; }
+            * { cursor: auto !important; }
+            
+            /* ADDED: Immediate touch feedback for mobile for faster feel */
+            a:active, button:active, input:active, select:active, .feature-tag:active, .btn-premium:active {
+                transform: scale(0.96) !important;
+                transition: transform 0.05s ease-out !important;
+            }
+            
+            body {
+                overscroll-behavior-y: none; /* Prevents pull-to-refresh lag */
+            }
+        }
+
+        @media (max-width: 768px) {
+            * { cursor: auto !important; }
+            #c-cursor, #c-follower { display: none; }
+            .glass-card { border-radius: 20px; }
+            .form-input { padding: 8px 12px; font-size: 12px; }
+        }
+
+        @media (max-width: 480px) {
+            body { padding: 12px !important; }
+        }
+
+        /* ===== ADDED FOR 1-FRAME PERFECT FIT (NO SCROLL) ===== */
+        body {
+            height: 100vh;
+            height: 100dvh;
+            overflow: hidden !important;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px !important;
+        }
+        .glass-card {
+            max-height: 98dvh;
+            overflow: hidden !important;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        /* Desktop Squish */
+        @media (min-width: 768px) {
+            .glass-card { padding: 15px 25px !important; }
+            .form-input { padding: 8px 12px !important; height: 36px !important; font-size: 12px !important; }
+            .space-y-2\.5 > :not([hidden]) ~ :not([hidden]) { margin-top: 6px !important; }
+            .gap-2\.5 { gap: 8px !important; }
+            .mb-4 { margin-bottom: 8px !important; }
+            h1.text-4xl { font-size: 2.2rem !important; margin-bottom: 10px !important; }
+            .feature-tag { padding: 8px !important; }
+            .btn-premium { padding: 10px !important; }
+        }
+        /* Mobile Squish */
+        @media (max-width: 767px) {
+            .glass-card { padding: 12px 16px !important; }
+            .form-input { padding: 6px 10px !important; font-size: 11px !important; height: 32px !important; }
+            label.field-label { margin-bottom: 2px !important; font-size: 9px !important; }
+            .space-y-2\.5 > :not([hidden]) ~ :not([hidden]) { margin-top: 4px !important; }
+            .gap-2\.5 { gap: 6px !important; }
+            .mb-4 { margin-bottom: 4px !important; }
+            .mt-4 { margin-top: 4px !important; }
+            .mt-2 { margin-top: 4px !important; }
+            .btn-premium { padding: 8px !important; font-size: 12px !important; }
+            h2 { font-size: 18px !important; margin-bottom: 0 !important; }
+            img.h-9 { height: 28px !important; margin-bottom: 2px !important; }
+            .pt-3 { padding-top: 6px !important; }
+            p#nidHint { font-size: 8px !important; line-height: 1.1 !important; margin-top: 2px !important; }
+        }
+        /* Ultra compact for small height screens */
+        @media (max-height: 700px) {
+            .form-input { height: 28px !important; font-size: 10px !important; padding: 4px 8px !important; }
+            label.field-label { font-size: 8px !important; margin-bottom: 1px !important; }
+            .space-y-2\.5 > :not([hidden]) ~ :not([hidden]) { margin-top: 3px !important; }
+            .gap-2\.5 { gap: 4px !important; }
+            .btn-premium { padding: 6px !important; font-size: 11px !important; }
+            .text-xs { font-size: 9px !important; }
+            p#nidHint { font-size: 7.5px !important; }
+        }
+    </style>
+</head>
+<body class="flex items-start md:items-center justify-center min-h-screen p-4 md:p-6 relative">
+    
+    <div id="c-cursor"></div>
+    <div id="c-follower"></div>
+
+    <div class="blob" style="top: -200px; left: -200px;"></div>
+    <div class="blob" style="bottom: -100px; right: -100px;"></div>
+    
+    <div class="w-full max-w-5xl grid md:grid-cols-2 gap-8 lg:gap-12 items-center relative z-10">
+        
+        <div class="hidden md:flex flex-col justify-center reveal">
+            <a href="home.html" class="inline-block mb-8 group">
+                <img src="{{ url_for('static', filename='FinoraXpense_Logo.png') }}" alt="FinoraXpense" class="h-20 w-auto object-contain transition-transform group-hover:scale-105">
+            </a>
+            <h1 class="text-4xl lg:text-5xl font-extrabold leading-tight mb-6">
+                Start your journey to <span class="text-[var(--primary)]">Financial Freedom.</span>
+            </h1>
+            <div class="space-y-3">
+                <div class="flex items-center gap-4 p-4 rounded-2xl feature-tag">
+                    <i class="fas fa-shield-halved text-[var(--primary)]"></i>
+                    <p class="text-sm font-semibold text-[var(--text-main)]">Bank-grade SHA-256 encryption</p>
+                </div>
+                <div class="flex items-center gap-4 p-4 rounded-2xl feature-tag">
+                    <i class="fas fa-robot text-[var(--primary)]"></i>
+                    <p class="text-sm font-semibold text-[var(--text-main)]">Real-time AI expense tracking</p>
+                </div>
+                <div class="flex items-center gap-4 p-4 rounded-2xl feature-tag">
+                    <i class="fas fa-id-card text-[var(--primary)]"></i>
+                    <p class="text-sm font-semibold text-[var(--text-main)]">NID-verified secure identity</p>
+                </div>
+                <div class="flex items-center gap-4 p-4 rounded-2xl feature-tag">
+                    <i class="fas fa-chart-line text-[var(--primary)]"></i>
+                    <p class="text-sm font-semibold text-[var(--text-main)]">Smart budget & savings goals</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-card p-5 md:p-7 reveal">
+            <div class="mb-4">
+                <a href="home.html" class="md:hidden inline-block mb-3">
+                    <img src="{{ url_for('static', filename='FinoraXpense_Logo.png') }}" alt="FinoraXpense" class="h-9 w-auto object-contain">
+                </a>
+                <h2 class="text-xl md:text-2xl font-bold">Create Account</h2>
+                <p class="text-[var(--text-sub)] text-xs mt-1">Join FinoraXpense — Save Money Smartly.</p>
+            </div>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="mb-4">
+                    {% for category, message in messages %}
+                        <div class="p-3 rounded-xl text-xs font-bold text-center {% if category == 'error' %}bg-red-500/10 text-red-500 border border-red-500/20{% else %}bg-green-500/10 text-green-500 border border-green-500/20{% endif %}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            <form class="space-y-2.5" action="/register" method="POST" id="registerForm">
+
+                <div class="grid grid-cols-2 gap-2.5">
+                    <div class="input-group">
+                        <label class="field-label">First Name</label>
+                        <input type="text" name="name" placeholder="First Name" class="form-input" required>
+                    </div>
+                    <div class="input-group">
+                        <label class="field-label">Last Name</label>
+                        <input type="text" name="last_name" placeholder="Last Name" class="form-input" required>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label class="field-label">Email Address</label>
+                    <input type="email" name="email" placeholder="name@gmail.com" class="form-input" required>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2.5">
+                    <div class="input-group">
+                        <label class="field-label">Phone Number</label>
+                        <input type="tel" name="phone" id="phoneInput" placeholder="01XXXXXXXXX" maxlength="11" class="form-input" required>
+                    </div>
+                    <div class="input-group">
+                        <label class="field-label">Date of Birth</label>
+                        <input type="date" name="date_of_birth" class="form-input" required>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2.5">
+                    <div class="input-group">
+                        <label class="field-label">Gender</label>
+                        <select name="gender" class="form-input" required>
+                            <option value="" disabled selected>Select Gender</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Other">Other</option>
+                            <option value="Prefer not to say">Prefer not to say</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label class="field-label">Division</label>
+                        <select name="division" id="divisionSelect" class="form-input" required>
+                            <option value="" disabled selected>Select Division</option>
+                            <option value="Dhaka">Dhaka</option>
+                            <option value="Chittagong">Chittagong</option>
+                            <option value="Rajshahi">Rajshahi</option>
+                            <option value="Khulna">Khulna</option>
+                            <option value="Barisal">Barisal</option>
+                            <option value="Sylhet">Sylhet</option>
+                            <option value="Rangpur">Rangpur</option>
+                            <option value="Mymensingh">Mymensingh</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label class="field-label">District</label>
+                    <select name="district" id="districtSelect" class="form-input" required>
+                        <option value="" disabled selected>Select Division First</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <div class="flex items-center justify-between mb-1.5">
+                        <label class="field-label !mb-0">Bangladesh NID Number</label>
+                        <span id="nidCounter" class="nid-counter nid-neutral">0 digits</span>
+                    </div>
+                    <input type="text" name="nid_number" id="nidInput" 
+                           placeholder="Enter 10 or 17 digit NID number"
+                           maxlength="17" inputmode="numeric" pattern="\d{10}|\d{17}"
+                           class="form-input" required>
+                    <p id="nidHint" class="text-[10px] mt-1 ml-1 text-[var(--text-sub)]">Bangladesh NID is either <strong>10 digits</strong> (smart card) or <strong>17 digits</strong> (old format).</p>
+                </div>
+
+                <div class="input-group">
+                    <label class="field-label">Password</label>
+                    <input type="password" name="password" placeholder="Min. 8 characters" class="form-input" required minlength="8">
+                </div>
+
+                <div class="grid grid-cols-2 gap-2.5">
+                    <div class="input-group">
+                        <label class="field-label">Account Role</label>
+                        <select name="role" id="roleSelect" class="form-input" required>
+                            <option value="user" selected>Standard User</option>
+                            <option value="admin">Administrator</option>
+                        </select>
+                    </div>
+                    <div class="input-group hidden" id="adminSecretGroup">
+                        <label class="field-label">Admin Secret Key</label>
+                        <input type="password" name="admin_secret" id="adminSecretInput" placeholder="Admin Access Code" class="form-input">
+                    </div>
+                </div>
+
+                <div class="flex items-start gap-3 py-1">
+                    <input type="checkbox" id="terms" name="terms" class="mt-0.5 accent-orange-500" required>
+                    <label for="terms" class="text-[11px] text-[var(--text-sub)] font-medium leading-relaxed">
+                        I agree to the <a href="#" class="text-[var(--primary)] underline">Terms</a> and <a href="#" class="text-[var(--primary)] underline">Privacy Policy</a>.
+                    </label>
+                </div>
+
+                <button type="submit" id="submitBtn" class="btn-premium w-full font-bold py-3.5 rounded-2xl shadow-lg shadow-orange-500/20 text-sm mt-2">
+                    <i class="fas fa-user-plus mr-2"></i>Create My Account
+                </button>
+            </form>
+
+            <div class="mt-4 text-center space-y-2">
+                <p class="text-xs text-[var(--text-sub)] font-medium">
+                    Already have an account? <a href="/login" class="text-[var(--primary)] font-bold hover:underline">Log in</a>
+                </p>
+                <div class="pt-3 border-t border-[var(--border)]">
+                    <a href="/" class="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--text-sub)] hover:text-[var(--primary)] transition-colors">
+                        <i class="fas fa-arrow-left"></i> Back to Home
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ── Theme ──────────────────────────────────────────────
+        if (localStorage.getItem('finance_theme') === 'dark') {
+            document.body.classList.add('dark-mode');
+        }
+
+        // ── Custom Cursor ──────────────────────────────────────
+        const cursor = document.getElementById('c-cursor');
+        const follower = document.getElementById('c-follower');
+        
+        // ADDED: Mobile check to completely disable JS cursor logic and remove elements for max performance
+        const isTouchDevice = window.matchMedia("(hover: none) and (pointer: coarse)").matches || ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+
+        if (isTouchDevice) {
+            if (cursor) cursor.remove();
+            if (follower) follower.remove();
+        } else {
+            // ORIGINAL CODE RETAINED EXACTLY AS REQUESTED
+            let mouseX = 0, mouseY = 0, followerX = 0, followerY = 0;
+            document.addEventListener('mousemove', (e) => {
+                mouseX = e.clientX; mouseY = e.clientY;
+                cursor.style.transform = `translate3d(${mouseX}px, ${mouseY}px, 0)`;
+            });
+            function animateCursor() {
+                followerX += (mouseX - followerX) * 0.1;
+                followerY += (mouseY - followerY) * 0.1;
+                follower.style.transform = `translate3d(${followerX - 16}px, ${followerY - 16}px, 0)`;
+                requestAnimationFrame(animateCursor);
+            }
+            animateCursor();
+        }
+
+        // ── Reveal on scroll ───────────────────────────────────
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('reveal-visible'); });
+        }, { threshold: 0.05 });
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+        // ── Bangladesh NID Validation ──────────────────────────
+        const nidInput = document.getElementById('nidInput');
+        const nidCounter = document.getElementById('nidCounter');
+        const nidHint = document.getElementById('nidHint');
+
+        nidInput.addEventListener('input', function () {
+            // Strip non-digits
+            this.value = this.value.replace(/\D/g, '');
+            const len = this.value.length;
+            nidCounter.textContent = len + ' digit' + (len !== 1 ? 's' : '');
+
+            if (len === 0) {
+                nidCounter.className = 'nid-counter nid-neutral';
+                nidHint.style.color = '';
+            } else if (len === 10 || len === 17) {
+                nidCounter.className = 'nid-counter nid-valid';
+                nidHint.style.color = '#16a34a';
+            } else if (len > 10 && len < 17) {
+                nidCounter.className = 'nid-counter nid-invalid';
+                nidHint.style.color = '#dc2626';
+            } else if (len > 17) {
+                // Prevent more than 17
+                this.value = this.value.slice(0, 17);
+            } else {
+                nidCounter.className = 'nid-counter nid-neutral';
+                nidHint.style.color = '';
+            }
+        });
+
+        // ── Phone: digits only, BD format ─────────────────────
+        const phoneInput = document.getElementById('phoneInput');
+        phoneInput.addEventListener('input', function () {
+            this.value = this.value.replace(/\D/g, '');
+        });
+
+        // ── District data by Division ──────────────────────────
+        const districts = {
+            Dhaka: ["Dhaka","Gazipur","Narayanganj","Narsingdi","Manikganj","Munshiganj","Rajbari","Faridpur","Madaripur","Shariatpur","Gopalganj","Kishoreganj","Tangail","Netrokona","Mymensingh","Jamalpur","Sherpur"],
+            Chittagong: ["Chittagong","Cox's Bazar","Rangamati","Bandarban","Khagrachhari","Feni","Lakshmipur","Noakhali","Comilla","Chandpur","Brahmanbaria"],
+            Rajshahi: ["Rajshahi","Natore","Pabna","Sirajganj","Bogra","Joypurhat","Naogaon","Chapainawabganj"],
+            Khulna: ["Khulna","Bagerhat","Satkhira","Jessore","Magura","Narail","Jhenaidah","Kushtia","Chuadanga","Meherpur"],
+            Barisal: ["Barisal","Bhola","Patuakhali","Pirojpur","Jhalokati","Barguna"],
+            Sylhet: ["Sylhet","Moulvibazar","Habiganj","Sunamganj"],
+            Rangpur: ["Rangpur","Dinajpur","Thakurgaon","Panchagarh","Nilphamari","Lalmonirhat","Kurigram","Gaibandha"],
+            Mymensingh: ["Mymensingh","Netrokona","Kishoreganj","Jamalpur","Sherpur"]
+        };
+
+        const divisionSelect = document.getElementById('divisionSelect');
+        const districtSelect = document.getElementById('districtSelect');
+
+        divisionSelect.addEventListener('change', function () {
+            const div = this.value;
+            districtSelect.innerHTML = '<option value="" disabled selected>Select District</option>';
+            if (districts[div]) {
+                districts[div].forEach(d => {
+                    const opt = document.createElement('option');
+                    opt.value = d; opt.textContent = d;
+                    districtSelect.appendChild(opt);
+                });
+            }
+        });
+
+        // ── Admin Role Toggle (NEW ADDITION) ───────────────────
+        document.getElementById('roleSelect').addEventListener('change', function () {
+            const secretGroup = document.getElementById('adminSecretGroup');
+            const secretInput = document.getElementById('adminSecretInput');
+            if (this.value === 'admin') {
+                secretGroup.classList.remove('hidden');
+                secretInput.required = true;
+            } else {
+                secretGroup.classList.add('hidden');
+                secretInput.required = false;
+                secretInput.value = '';
+            }
+        });
+
+        // ── Form submit: NID final guard ───────────────────────
+        document.getElementById('registerForm').addEventListener('submit', function (e) {
+            const nid = nidInput.value.trim();
+            if (nid && nid.length !== 10 && nid.length !== 17) {
+                e.preventDefault();
+                nidCounter.className = 'nid-counter nid-invalid';
+                nidHint.style.color = '#dc2626';
+                nidInput.focus();
+                nidInput.style.borderColor = '#dc2626';
+                nidInput.style.boxShadow = '0 0 0 4px rgba(220,38,38,0.12)';
+                return false;
+            }
+            // Show loading state
+            const btn = document.getElementById('submitBtn');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Creating Account...';
+            btn.disabled = true;
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,84 @@
+# ============================================================
+# FinoraXpense — .gitignore
+# ============================================================
+
+# === SECRET FILES (NEVER COMMIT!) ===
+.env
+*.env
+!.env.example
+
+# === Python ===
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+.Python
+
+# === Virtual Environments ===
+venv/
+env/
+.venv/
+ENV/
+env.bak/
+venv.bak/
+
+# === Distribution / Packaging ===
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+parts/
+var/
+sdist/
+develop-eggs/
+.installed.cfg
+lib/
+lib64/
+
+# === Flask Instance Folder ===
+instance/
+.webassets-cache
+
+# === User Uploaded Files ===
+static/uploads/avatars/
+
+# === Database ===
+*.db
+*.sqlite3
+
+# === Logs ===
+*.log
+pip-log.txt
+pip-delete-this-directory.txt
+
+# === Testing ===
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+htmlcov/
+.pytest_cache/
+
+# === IDE & Editor Files ===
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.pydevproject
+
+# === OS Files ===
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
