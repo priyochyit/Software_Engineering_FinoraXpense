@@ -1,0 +1,1183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>User Profile | FinoraXpense</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        
+        html, body, main {
+            -webkit-overflow-scrolling: touch; /* Added for ultra-smooth mobile scrolling */
+        }
+
+        :root {
+            --primary: #f58220; 
+            --bg: #f8fafc;
+            --text-main: #0f172a;
+            --text-sub: #64748b;
+            --card: #ffffff;
+            --border: rgba(0,0,0,0.06);
+            --glass: rgba(255, 255, 255, 0.7);
+        }
+
+        .dark-mode {
+            --bg: #020617;
+            --text-main: #f8fafc;
+            --text-sub: #94a3b8;
+            --card: #0f172a;
+            --border: rgba(255,255,255,0.1);
+            --glass: rgba(2, 6, 23, 0.7);
+        }
+        
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            transition: background 0.5s ease, color 0.5s ease;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Animation for section transitions */
+        .app-section {
+            display: none;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeIntoDashboard 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .app-section.active-section {
+            display: block;
+        }
+
+        @keyframes fadeIntoDashboard {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .glass-panel {
+            background: var(--glass);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid var(--border);
+            box-shadow: 0 10px 40px -10px rgba(0,0,0,0.05);
+        }
+
+        .btn-premium {
+            background: var(--primary);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 14px;
+            font-weight: 700;
+            font-size: 13px;
+            transition: 0.3s;
+            cursor: pointer;
+        }
+        .btn-premium:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(245, 130, 32, 0.2);
+        }
+
+        .nav-item {
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border-right: 3px solid transparent;
+        }
+        .nav-item:hover, .nav-item.active {
+            background: rgba(245, 130, 32, 0.1);
+            color: var(--primary) !important;
+            border-right: 3px solid var(--primary);
+        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        
+        /* Toast Notification Styling */
+        .toast-notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--card);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            padding: 16px 24px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transform: translateY(50px);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .toast-notification.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        /* Dropdown Modal styles */
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 10px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            width: 250px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 50;
+        }
+        .dropdown-menu.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        /* Mobile Bottom Nav Styles (Docked to bottom) */
+        .mobile-bottom-nav { position: fixed; bottom: 0; left: 0; transform: none; width: 100%; max-width: 100%; background: var(--glass); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-top: 1px solid var(--border); border-radius: 24px 24px 0 0; display: flex; justify-content: space-around; align-items: center; padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); z-index: 1001; box-shadow: 0 -5px 25px -5px rgba(0,0,0,0.1); }
+        .dark-mode .mobile-bottom-nav { box-shadow: 0 -5px 25px -5px rgba(0,0,0,0.4); }
+        .mobile-nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--text-sub); flex: 1; transition: color 0.2s ease; cursor: pointer; text-decoration: none; -webkit-tap-highlight-color: transparent; }
+        .mobile-nav-item.active { color: var(--primary); }
+        .mobile-nav-item i { font-size: 20px; margin-bottom: 2px; transition: transform 0.2s ease; }
+        .mobile-nav-item:active i { transform: scale(0.9); }
+        .mobile-nav-item span { font-size: 10px; font-weight: 700; }
+        
+        a, button, .mobile-nav-item, .nav-item, .glass-panel {
+            touch-action: manipulation;
+        }
+
+        @media (hover: none) and (pointer: coarse) {
+            * { cursor: auto !important; }
+            
+            /* Immediate touch feedback for mobile for faster feel */
+            a:active, button:active, input:active, select:active, .btn-premium:active, .mobile-nav-item:active, .nav-item:active, .glass-panel[onclick]:active {
+                transform: scale(0.96) !important;
+                transition: transform 0.05s ease-out !important;
+            }
+            
+            body, main {
+                overscroll-behavior-y: none; /* Prevents pull-to-refresh lag */
+            }
+        }
+        
+        /* Mobile Layout Adjustments */
+        @media (max-width: 767px) {
+            main { padding-bottom: 110px !important; } /* Prevents content hiding under bottom nav */
+            
+            #profileModal { padding: 15px !important; z-index: 2000 !important; }
+            #profileModal > div {
+                max-height: 100%;
+                padding: 16px !important;
+                display: flex;
+                flex-direction: column;
+                margin: auto;
+            }
+            #profileModal h3 { font-size: 18px !important; margin-bottom: 12px !important; text-align: center; }
+            #profileModal .flex-col.mb-6 { margin-bottom: 12px !important; }
+            #profileModal .w-24 { width: 64px !important; height: 64px !important; font-size: 24px !important; border-width: 2px !important; }
+            #profileModal form { flex: 1; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; }
+            
+            /* Force 2 column grid on mobile to save vertical space */
+            #profileModal .grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 8px !important; }
+            #profileModal .grid > div { margin-bottom: 0; }
+            
+            #profileModal label { font-size: 9px !important; margin-bottom: 2px !important; }
+            #profileModal input, #profileModal select { padding: 6px 10px !important; font-size: 11px !important; height: 34px !important; border-radius: 10px !important; }
+            #profileModal button[type="submit"] { padding: 10px !important; margin-top: 12px !important; font-size: 13px !important; border-radius: 12px !important;}
+            #profileModal p.text-\[10px\] { font-size: 8px !important; margin-top: 4px !important; }
+        }
+        @media (max-height: 650px) and (max-width: 767px) {
+            #profileModal .w-24 { width: 50px !important; height: 50px !important; }
+            #profileModal h3 { font-size: 16px !important; margin-bottom: 8px !important; }
+            #profileModal input, #profileModal select { height: 30px !important; font-size: 10px !important; padding: 4px 8px !important;}
+            #profileModal .grid { gap: 6px !important; }
+            #profileModal button[type="submit"] { padding: 8px !important; margin-top: 8px !important; }
+        }
+    </style>
+</head>
+<body class="flex h-screen antialiased overflow-hidden">
+
+    <aside class="w-64 shrink-0 glass-panel flex flex-col h-full hidden md:flex z-20 border-r border-[var(--border)] relative">
+        <div class="h-20 shrink-0 flex items-center px-8 border-b border-[var(--border)]">
+            <img src="{{ url_for('static', filename='FinoraXpense_Logo.png') }}" alt="Logo" class="h-8" onerror="this.style.display='none'">
+        </div>
+        <nav class="flex-1 py-6 flex flex-col gap-2 px-4 overflow-y-auto">
+            <a onclick="switchSection('dashboard-section', this)" class="nav-item active flex items-center gap-4 px-4 py-3 rounded-xl font-semibold">
+                <i class="fa-solid fa-house"></i> Dashboard
+            </a>
+            <a onclick="switchSection('transactions-section', this)" class="nav-item flex items-center gap-4 px-4 py-3 rounded-xl font-semibold text-[var(--text-sub)]">
+                <i class="fa-solid fa-wallet"></i> Transactions
+            </a>
+            <a onclick="switchSection('budgets-section', this)" class="nav-item flex items-center gap-4 px-4 py-3 rounded-xl font-semibold text-[var(--text-sub)]">
+                <i class="fa-solid fa-bullseye"></i> Budgets
+            </a>
+            <a onclick="switchSection('savings-section', this)" class="nav-item flex items-center gap-4 px-4 py-3 rounded-xl font-semibold text-[var(--text-sub)]">
+                <i class="fa-solid fa-sack-dollar"></i> Savings
+            </a>
+            <a onclick="switchSection('analytics-section', this)" class="nav-item flex items-center gap-4 px-4 py-3 rounded-xl font-semibold text-[var(--text-sub)]">
+                <i class="fa-solid fa-chart-line"></i> Analytics
+            </a>
+            <a onclick="switchSection('ai-section', this)" class="nav-item flex items-center gap-4 px-4 py-3 rounded-xl font-semibold text-purple-600 bg-purple-500/5 hover:bg-purple-500/10 transition mt-2">
+                <i class="fa-solid fa-robot"></i> AI Suggestions
+            </a>
+        </nav>
+        <div class="p-4 border-t border-[var(--border)]">
+            <a href="{{ url_for('logout') }}" class="flex items-center gap-4 px-4 py-3 rounded-xl font-semibold text-red-500 hover:bg-red-500/10 transition-colors">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i> Logout
+            </a>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col h-full relative overflow-y-auto bg-[var(--bg)] pb-28 md:pb-0">
+        
+        <header class="h-20 shrink-0 glass-panel sticky top-0 z-10 flex items-center justify-between px-6 md:px-8">
+            <div class="flex items-center gap-4">
+                <h2 class="text-xl font-bold">Welcome back, <span style="color: var(--primary)">{{ user.name if user else 'User' }}</span></h2>
+            </div>
+            
+            <div class="flex items-center gap-4 md:gap-6 relative">
+                <button id="theme-toggle" class="text-[var(--text-sub)] hover:text-[var(--primary)] transition text-xl cursor-pointer"><i class="fa-solid fa-moon"></i></button>
+
+                <div class="relative">
+                    <button onclick="toggleDropdown('notif-menu')" class="text-[var(--text-sub)] hover:text-[var(--primary)] transition relative text-xl cursor-pointer">
+                        <i class="fa-regular fa-bell"></i>
+                        <span class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full"></span>
+                    </button>
+                    <div id="notif-menu" class="dropdown-menu p-3 w-[300px]">
+                        <p class="text-sm font-bold text-[var(--text-sub)] mb-2 px-2">Notifications</p>
+                        {% if budget_percentage|default(0) >= 90 %}
+                        <div class="p-3 bg-red-500/10 rounded-xl mb-2 flex gap-3">
+                            <i class="fa-solid fa-triangle-exclamation text-red-500 mt-1"></i>
+                            <div>
+                                <p class="text-sm font-bold text-red-500">Budget Alert</p>
+                                <p class="text-xs text-[var(--text-main)]">You have used {{ budget_percentage }}% of your limit.</p>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="p-4 text-center text-sm text-[var(--text-sub)]">No new alerts at the moment.</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="relative">
+                    <div onclick="toggleDropdown('profile-menu')" class="w-10 h-10 rounded-full bg-[var(--primary)] flex items-center justify-center text-white font-bold shadow-md cursor-pointer hover:opacity-80 transition overflow-hidden border-2 border-[var(--bg)] shrink-0">
+                        {% if user and user.avatar_url %}
+                            <img src="{{ user.avatar_url }}" alt="Profile" class="w-full h-full object-cover" referrerpolicy="no-referrer">
+                        {% else %}
+                            {{ user.name[0] if user else 'U' }}
+                        {% endif %}
+                    </div>
+                    <div id="profile-menu" class="dropdown-menu p-3">
+                        <div class="flex flex-col p-2 border-b border-[var(--border)] mb-2">
+                            <div class="flex items-center flex-wrap gap-1.5 mb-1">
+                                <p class="text-sm font-bold text-[var(--text-main)] break-words leading-tight">
+                                    {{ user.name if user else 'User' }} {% if user and user.last_name %}{{ user.last_name }}{% endif %}
+                                </p>
+                                <i class="fa-solid fa-circle-check text-[#0866FF] text-[15px]" title="Verified"></i>
+                            </div>
+                            <p class="text-xs text-[var(--text-sub)] break-words">{{ user.email if user else '' }}</p>
+                        </div>
+                        <a onclick="openProfileModal()" class="block px-4 py-2 hover:bg-[var(--primary)]/10 rounded-xl transition text-sm font-semibold cursor-pointer"><i class="fa-solid fa-user-pen mr-2"></i> Profile Settings</a>
+                        <a href="{{ url_for('logout') }}" class="block px-4 py-2 hover:bg-red-500/10 text-red-500 rounded-xl transition text-sm font-semibold"><i class="fa-solid fa-arrow-right-from-bracket mr-2"></i> Logout</a>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="p-6 md:p-8 max-w-7xl mx-auto w-full space-y-8">
+            
+            {% with messages = get_flashed_messages(with_categories=true) %}
+              {% if messages %}
+                {% for category, message in messages %}
+                  <div class="p-4 mb-4 rounded-xl text-sm font-semibold {{ 'bg-green-100 text-green-700' if category == 'success' else 'bg-red-100 text-red-700' }}">
+                      {{ message }}
+                  </div>
+                {% endfor %}
+              {% endif %}
+            {% endwith %}
+
+            <div id="dashboard-section" class="app-section active-section space-y-8">
+                <div class="flex justify-between items-center mb-6 border-b border-[var(--border)] pb-4">
+                    <h2 class="text-2xl font-bold">Dashboard Overview</h2>
+                    <button onclick="document.getElementById('transactionModal').classList.remove('hidden')" class="btn-premium flex items-center gap-2">
+                        <i class="fa-solid fa-plus"></i> Add Transaction
+                    </button>
+                </div>
+                
+                <div class="w-full relative overflow-hidden rounded-[32px] p-8 md:p-14 flex flex-col justify-center bg-gradient-to-r from-[var(--primary)] to-orange-400 shadow-xl shadow-orange-500/30 transition-all min-h-[160px] md:min-h-[220px]">
+                    <div class="absolute -top-12 -right-12 w-40 md:w-72 h-40 md:h-72 bg-white/20 rounded-full blur-2xl pointer-events-none"></div>
+                    <div class="absolute -bottom-10 -left-10 w-28 md:w-48 h-28 md:h-48 bg-white/20 rounded-full blur-xl pointer-events-none"></div>
+                    
+                    <div class="relative z-10 text-center md:text-left">
+                        <h3 class="text-sm md:text-base font-extrabold text-white/90 uppercase tracking-widest mb-2 drop-shadow-sm">Current Balance</h3>
+                        <h1 class="text-5xl md:text-7xl font-black text-white drop-shadow-md">৳ {{ "%.2f"|format(total_balance|default(0)) }}</h1>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="glass-panel p-6 rounded-2xl bg-[var(--card)] hover:shadow-lg transition cursor-pointer">
+                        <div class="flex items-center gap-4 mb-4">
+                            <div class="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center text-green-500"><i class="fa-solid fa-arrow-trend-up"></i></div>
+                            <p class="text-sm font-bold text-[var(--text-sub)]">Total Income</p>
+                        </div>
+                        <p class="text-2xl font-bold">৳ {{ "%.2f"|format(total_income|default(0)) }}</p>
+                    </div>
+                    
+                    <div class="glass-panel p-6 rounded-2xl bg-[var(--card)] hover:shadow-lg transition cursor-pointer">
+                        <div class="flex items-center gap-4 mb-4">
+                            <div class="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center text-red-500"><i class="fa-solid fa-arrow-trend-down"></i></div>
+                            <p class="text-sm font-bold text-[var(--text-sub)]">Total Expense</p>
+                        </div>
+                        <p class="text-2xl font-bold">৳ {{ "%.2f"|format(total_expense|default(0)) }}</p>
+                    </div>
+
+                    <div class="glass-panel p-6 rounded-2xl bg-[var(--card)] flex flex-col justify-center hover:shadow-lg transition cursor-pointer" onclick="switchSection('budgets-section', document.querySelectorAll('.nav-item')[2])">
+                        <div class="flex justify-between items-end mb-3">
+                            <p class="text-sm font-bold text-[var(--text-sub)]">Monthly Budget Limit (৳{{ "%.0f"|format(budget_limit|default(0)) }})</p>
+                            <p class="text-xs font-bold {{ 'text-red-500' if budget_percentage|default(0) >= 90 else 'text-orange-500' }}">{{ budget_percentage|default(0) }}% Used</p>
+                        </div>
+                        <div class="w-full bg-gray-200 h-2.5 rounded-full overflow-hidden">
+                            <div class="{{ 'bg-red-500' if budget_percentage|default(0) >= 90 else 'bg-[var(--primary)]' }} h-full rounded-full transition-all duration-500" style="width: {{ budget_percentage|default(0) }}%;"></div>
+                        </div>
+                        <p class="text-[10px] mt-2 text-[var(--text-sub)]">
+                            {% if budget_percentage|default(0) >= 90 %}
+                                Critical Warning: Limit almost exceeded!
+                            {% else %}
+                                Warning: Approaching limit (FR-10 Alert)
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div class="lg:col-span-2 glass-panel p-6 rounded-2xl bg-[var(--card)]">
+                        <div class="flex items-center justify-between mb-5">
+                            <div>
+                                <h3 class="font-bold text-lg">Income vs Expense Analytics</h3>
+                                <p class="text-[10px] text-purple-500 font-semibold mt-0.5"><i class="fa-solid fa-chart-bar mr-1"></i> 2D Animated Smart Bar Chart &bull; Real-time</p>
+                            </div>
+                            <div class="flex gap-4">
+                                <div class="flex items-center gap-1.5"><div class="w-3 h-3 rounded bg-green-500"></div><span class="text-[10px] font-bold text-[var(--text-sub)]">Income</span></div>
+                                <div class="flex items-center gap-1.5"><div class="w-3 h-3 rounded bg-red-500"></div><span class="text-[10px] font-bold text-[var(--text-sub)]">Expense</span></div>
+                            </div>
+                        </div>
+                        <div class="h-64 w-full"><canvas id="expenseChart"></canvas></div>
+                    </div>
+
+                    <div class="glass-panel p-6 rounded-2xl bg-[var(--card)] flex flex-col h-[340px]">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="font-bold text-lg">Recent Transactions</h3>
+                            <button onclick="switchSection('transactions-section', document.querySelectorAll('.nav-item')[1])" class="text-xs font-bold text-[var(--primary)] hover:underline">View All</button>
+                        </div>
+                        <div class="flex-1 overflow-y-auto space-y-3 pr-2">
+                            {% for tx in transactions %}
+                            <div class="flex justify-between items-center p-3 hover:bg-[var(--primary)]/5 rounded-xl transition border border-transparent hover:border-[var(--primary)]/20 cursor-pointer">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-full {{ 'bg-green-500/10 text-green-500' if tx.type == 'income' else 'bg-red-500/10 text-red-500' }} flex items-center justify-center">
+                                        <i class="fa-solid {{ 'fa-arrow-down' if tx.type == 'income' else 'fa-arrow-up' }}"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-bold text-sm">{{ tx.category }}</p>
+                                        <p class="text-[10px] text-[var(--text-sub)] flex items-center gap-1">
+                                            <i class="fa-solid fa-wand-magic-sparkles text-purple-500"></i> AI Tag: {{ tx.description[:15] }}...
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="text-right flex flex-col items-end gap-1">
+                                    <p class="font-bold text-sm {{ 'text-green-500' if tx.type == 'income' else 'text-red-500' }}">
+                                        {{ '+' if tx.type == 'income' else '-' }} ৳{{ tx.amount }}
+                                    </p>
+                                    <div class="flex gap-2">
+                                        <button onclick="openEditModal({{ tx.id }}, '{{ tx.type }}', {{ tx.amount }}, '{{ tx.description }}', event)" class="text-[10px] text-blue-400 hover:text-blue-600 font-bold px-1">Edit</button>
+                                        <form action="{{ url_for('delete_transaction', tx_id=tx.id) }}" method="POST" class="inline" onclick="event.stopPropagation();">
+                                            <button type="submit" class="text-[10px] text-red-400 hover:text-red-600 font-bold px-1">Delete</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            {% else %}
+                            <p class="text-center text-[var(--text-sub)] text-sm mt-10">No transactions yet.</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="transactions-section" class="app-section space-y-6">
+                <div class="flex justify-between items-center mb-6 border-b border-[var(--border)] pb-4">
+                    <h2 class="text-2xl font-bold">All Transactions</h2>
+                    <button onclick="document.getElementById('transactionModal').classList.remove('hidden')" class="btn-premium flex items-center gap-2">
+                        <i class="fa-solid fa-plus"></i> New Record
+                    </button>
+                </div>
+                
+                <div class="glass-panel p-4 md:p-6 rounded-2xl bg-[var(--card)]">
+                    <div class="hidden md:block overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="text-[var(--text-sub)] text-sm border-b border-[var(--border)]">
+                                    <th class="pb-3 px-4 font-semibold">Date</th>
+                                    <th class="pb-3 px-4 font-semibold">Description</th>
+                                    <th class="pb-3 px-4 font-semibold">Category (AI)</th>
+                                    <th class="pb-3 px-4 font-semibold">Type</th>
+                                    <th class="pb-3 px-4 font-semibold">Amount</th>
+                                    <th class="pb-3 px-4 font-semibold text-right">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for tx in all_transactions %}
+                                <tr class="border-b border-[var(--border)] hover:bg-[var(--bg)] transition">
+                                    <td class="py-4 px-4 text-sm font-semibold">{{ tx.created_at.strftime('%d %b, %Y') }}</td>
+                                    <td class="py-4 px-4 text-sm font-bold">{{ tx.description }}</td>
+                                    <td class="py-4 px-4"><span class="px-3 py-1 rounded-full text-xs font-bold bg-purple-500/10 text-purple-600 border border-purple-500/20"><i class="fa-solid fa-wand-magic-sparkles mr-1"></i>{{ tx.category }}</span></td>
+                                    <td class="py-4 px-4">
+                                        <span class="px-2 py-1 rounded text-xs font-bold {{ 'bg-green-500/10 text-green-600' if tx.type == 'income' else 'bg-red-500/10 text-red-600' }}">
+                                            {{ tx.type|capitalize }}
+                                        </span>
+                                    </td>
+                                    <td class="py-4 px-4 font-extrabold {{ 'text-green-500' if tx.type == 'income' else 'text-red-500' }}">
+                                        {{ '+' if tx.type == 'income' else '-' }}৳{{ tx.amount }}
+                                    </td>
+                                    <td class="py-4 px-4 text-right">
+                                        <div class="flex items-center justify-end gap-2">
+                                            <button onclick="openEditModal({{ tx.id }}, '{{ tx.type }}', {{ tx.amount }}, '{{ tx.description }}', event)" class="w-8 h-8 rounded-full bg-blue-500/10 text-blue-500 hover:bg-blue-500 hover:text-white transition shadow-sm"><i class="fa-solid fa-pen text-xs"></i></button>
+                                            <form action="{{ url_for('delete_transaction', tx_id=tx.id) }}" method="POST" class="inline">
+                                                <button type="submit" class="w-8 h-8 rounded-full bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition shadow-sm"><i class="fa-solid fa-trash text-xs"></i></button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr><td colspan="6" class="text-center py-8 text-[var(--text-sub)] font-semibold">No data available in database</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="md:hidden flex flex-col gap-4">
+                        {% for tx in all_transactions %}
+                        <div class="p-4 rounded-2xl border border-[var(--border)] bg-[var(--bg)] shadow-sm">
+                            <div class="flex justify-between items-start mb-3">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 shrink-0 rounded-full {{ 'bg-green-500/10 text-green-500' if tx.type == 'income' else 'bg-red-500/10 text-red-500' }} flex items-center justify-center">
+                                        <i class="fa-solid {{ 'fa-arrow-down' if tx.type == 'income' else 'fa-arrow-up' }}"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-bold text-sm text-[var(--text-main)] leading-tight mb-1">{{ tx.description }}</p>
+                                        <p class="text-[10px] text-[var(--text-sub)] font-semibold">{{ tx.created_at.strftime('%d %b, %Y') }} &bull; <span class="{{ 'text-green-500' if tx.type == 'income' else 'text-red-500' }}">{{ tx.type|capitalize }}</span></p>
+                                    </div>
+                                </div>
+                                <div class="text-right shrink-0 ml-2">
+                                    <p class="font-extrabold text-sm {{ 'text-green-500' if tx.type == 'income' else 'text-red-500' }}">
+                                        {{ '+' if tx.type == 'income' else '-' }}৳{{ tx.amount }}
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex justify-between items-center pt-3 border-t border-[var(--border)]">
+                                <span class="px-2.5 py-1.5 rounded-full text-[9px] font-bold bg-purple-500/10 text-purple-600 border border-purple-500/20"><i class="fa-solid fa-wand-magic-sparkles mr-1"></i>{{ tx.category }}</span>
+                                
+                                <div class="flex items-center gap-2">
+                                    <button onclick="openEditModal({{ tx.id }}, '{{ tx.type }}', {{ tx.amount }}, '{{ tx.description }}', event)" class="w-8 h-8 flex items-center justify-center rounded-full bg-blue-500/10 text-blue-500 hover:bg-blue-500 hover:text-white transition shadow-sm"><i class="fa-solid fa-pen text-[10px]"></i></button>
+                                    <form action="{{ url_for('delete_transaction', tx_id=tx.id) }}" method="POST" class="inline">
+                                        <button type="submit" class="w-8 h-8 flex items-center justify-center rounded-full bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition shadow-sm"><i class="fa-solid fa-trash text-[10px]"></i></button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="text-center py-10 bg-[var(--bg)] rounded-2xl border border-[var(--border)]">
+                            <i class="fa-solid fa-receipt text-3xl text-[var(--text-sub)] mb-3 opacity-50"></i>
+                            <p class="text-[var(--text-sub)] font-semibold text-sm">No data available in database</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <div id="ai-section" class="app-section space-y-6">
+                <div class="flex justify-between items-center mb-6 border-b border-[var(--border)] pb-4">
+                    <h2 class="text-2xl font-bold flex items-center gap-3"><i class="fa-solid fa-robot text-purple-600"></i> AI Financial Suggestions</h2>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="glass-panel p-8 rounded-3xl bg-[var(--card)] shadow-lg relative overflow-hidden h-full">
+                        <div class="absolute top-0 left-0 w-32 h-32 bg-purple-500/10 rounded-full blur-3xl -ml-10 -mt-10"></div>
+                        <h3 class="text-xl font-bold mb-4">Real-Time Insights</h3>
+                        <p class="text-sm text-[var(--text-sub)] mb-6">Our AI system analyzes your income and expense data to provide the best recommendations for you.</p>
+                        
+                        <div class="space-y-4">
+                            {% for insight in ai_insights %}
+                                <div class="p-5 rounded-xl border border-[var(--border)] flex gap-4 items-start hover:shadow-md transition 
+                                {% if insight.type == 'danger' %} bg-red-500/5 {% elif insight.type == 'warning' %} bg-orange-500/5 
+                                {% elif insight.type == 'success' %} bg-green-500/5 {% else %} bg-purple-500/5 {% endif %}">
+                                    <div class="mt-1 
+                                    {% if insight.type == 'danger' %} text-red-500 {% elif insight.type == 'warning' %} text-orange-500 
+                                    {% elif insight.type == 'success' %} text-green-500 {% else %} text-purple-500 {% endif %} text-xl">
+                                        <i class="fa-solid {{ insight.icon }}"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-sm mb-1">{{ insight.title }}</h4>
+                                        <p class="text-sm text-[var(--text-main)] font-semibold">{{ insight.message }}</p>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <div class="p-5 text-center text-[var(--text-sub)]">Not enough data available right now. Please add some transactions.</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div class="glass-panel p-8 rounded-3xl bg-[var(--card)] shadow-lg flex flex-col justify-center items-center text-center">
+                        <img src="https://cdn-icons-png.flaticon.com/512/8653/8653200.png" alt="AI Brain" class="w-32 h-32 mb-6 opacity-80" onerror="this.style.display='none'">
+                        <h3 class="text-xl font-bold mb-2">Machine Learning Tracking</h3>
+                        <p class="text-sm text-[var(--text-sub)]">Our AI model is learning your spending patterns and providing precise guidelines to help you achieve your future goals.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="budgets-section" class="app-section space-y-6">
+                <div class="flex justify-between items-center mb-6 border-b border-[var(--border)] pb-4">
+                    <h2 class="text-2xl font-bold">Budget Management</h2>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="glass-panel p-8 rounded-3xl bg-[var(--card)] shadow-lg relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-32 h-32 bg-[var(--primary)]/10 rounded-full blur-3xl -mr-10 -mt-10"></div>
+                        <h3 class="text-xl font-bold mb-2">Set Monthly Budget Limit</h3>
+                        <p class="text-sm text-[var(--text-sub)] mb-6">Control your expenses by setting a realistic target.</p>
+                        
+                        <form action="{{ url_for('update_budget') }}" method="POST" class="space-y-5">
+                            <div>
+                                <label class="block text-sm font-semibold text-[var(--text-sub)] mb-2">Maximum Expense Limit (৳)</label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                        <span class="text-[var(--text-main)] font-bold">৳</span>
+                                    </div>
+                                    <input type="number" name="limit_amount" required value="{{ budget_limit|default(50000) }}" class="w-full bg-transparent border-2 border-[var(--border)] rounded-2xl pl-10 pr-4 py-4 outline-none focus:border-[var(--primary)] text-[var(--text-main)] font-bold text-lg transition shadow-sm">
+                                </div>
+                            </div>
+                            <button type="submit" class="btn-premium w-full py-4 text-base shadow-lg shadow-[var(--primary)]/30"><i class="fa-solid fa-floppy-disk mr-2"></i> Update Limit</button>
+                        </form>
+                    </div>
+
+                    <div class="glass-panel p-8 rounded-3xl bg-[var(--card)] flex flex-col justify-center border-t-4 {{ 'border-red-500' if budget_percentage >= 90 else 'border-[var(--primary)]' }}">
+                        <div class="text-center mb-6">
+                            <h4 class="text-sm font-bold text-[var(--text-sub)] uppercase tracking-wider">Current Month Status</h4>
+                            <h2 class="text-5xl font-black mt-2 {{ 'text-red-500' if budget_percentage >= 90 else 'text-[var(--text-main)]' }}">{{ budget_percentage }}%</h2>
+                            <p class="font-semibold text-[var(--text-sub)] mt-1">Used of your ৳{{ budget_limit }} limit</p>
+                        </div>
+                        
+                        <div class="w-full bg-gray-200 h-4 rounded-full overflow-hidden shadow-inner">
+                            <div class="{{ 'bg-red-500' if budget_percentage >= 90 else 'bg-[var(--primary)]' }} h-full rounded-full transition-all duration-1000 ease-out relative" style="width: {{ budget_percentage }}%;">
+                                <div class="absolute inset-0 bg-white/20"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-between mt-3 text-xs font-bold text-[var(--text-sub)]">
+                            <span>৳0</span>
+                            <span class="text-[var(--text-main)]">Spent: ৳{{ total_expense }}</span>
+                            <span>৳{{ budget_limit }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="savings-section" class="app-section space-y-6">
+                <div class="flex justify-between items-center mb-6 border-b border-[var(--border)] pb-4">
+                    <h2 class="text-2xl font-bold">Financial Goals</h2>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="glass-panel p-6 rounded-2xl bg-[var(--card)] border-dashed border-2 border-[var(--primary)]/50 hover:bg-[var(--primary)]/5 transition cursor-pointer flex flex-col items-center justify-center min-h-[220px]" onclick="document.getElementById('goalModal').classList.remove('hidden')">
+                        <div class="w-14 h-14 rounded-full bg-[var(--primary)]/10 text-[var(--primary)] flex items-center justify-center text-2xl mb-3"><i class="fa-solid fa-plus"></i></div>
+                        <h4 class="font-bold">Create New Goal</h4>
+                        <p class="text-xs text-[var(--text-sub)] text-center mt-1">Start saving for your dream</p>
+                    </div>
+
+                    {% for goal in savings_goals %}
+                    <div class="glass-panel p-6 rounded-2xl bg-[var(--card)] hover:shadow-lg transition flex flex-col justify-between min-h-[250px]">
+                        <div>
+                            <div class="flex justify-between items-start mb-2">
+                                <h4 class="font-bold text-lg leading-tight">{{ goal.goal_name }}</h4>
+                                <div class="w-8 h-8 rounded-full bg-blue-500/10 text-blue-500 flex items-center justify-center"><i class="fa-solid fa-bullseye text-sm"></i></div>
+                            </div>
+                            <p class="text-sm text-[var(--text-sub)] font-semibold">Target: ৳{{ "%.2f"|format(goal.target_amount) }}</p>
+                        </div>
+                        
+                        <div class="mt-2">
+                            {% set progress = (goal.current_amount / goal.target_amount * 100) if goal.target_amount > 0 else 0 %}
+                            <div class="flex justify-between items-end mb-2">
+                                <p class="text-xs font-bold text-[var(--text-sub)]">Progress</p>
+                                <p class="text-sm font-extrabold text-[var(--primary)]">{{ "%.1f"|format(progress) }}%</p>
+                            </div>
+                            <div class="w-full bg-gray-200 h-2.5 rounded-full overflow-hidden">
+                                <div class="bg-[var(--primary)] h-full rounded-full transition-all" style="width: {{ progress }}%;"></div>
+                            </div>
+                            <p class="text-[10px] mt-2 font-semibold text-[var(--text-sub)]">Saved: ৳{{ "%.2f"|format(goal.current_amount) }}</p>
+                        </div>
+                        
+                        <div class="mt-4 pt-4 border-t border-[var(--border)]">
+                            <button onclick="openAddFundsModal({{ goal.id }}, '{{ goal.goal_name }}')" class="w-full py-2 bg-green-500/10 text-green-600 font-bold text-sm rounded-xl hover:bg-green-500 hover:text-white transition"><i class="fa-solid fa-money-bill-transfer mr-2"></i> Add Funds</button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div id="analytics-section" class="app-section space-y-6">
+                <div class="flex justify-between items-center mb-6 border-b border-[var(--border)] pb-4">
+                    <h2 class="text-2xl font-bold">Deep Analytics</h2>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="glass-panel p-6 rounded-2xl bg-[var(--card)]">
+                        <h3 class="font-bold text-lg mb-6">Expense By Category</h3>
+                        <div class="h-64 w-full flex justify-center"><canvas id="categoryChart"></canvas></div>
+                    </div>
+                    <div class="glass-panel p-6 rounded-2xl bg-[var(--card)] flex flex-col justify-center">
+                        <h3 class="font-bold text-lg mb-6 text-center">Summary</h3>
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center p-4 bg-green-500/10 rounded-xl">
+                                <span class="font-bold text-green-700">Total Income</span>
+                                <span class="font-extrabold text-green-700">৳{{ "%.2f"|format(total_income) }}</span>
+                            </div>
+                            <div class="flex justify-between items-center p-4 bg-red-500/10 rounded-xl">
+                                <span class="font-bold text-red-700">Total Expense</span>
+                                <span class="font-extrabold text-red-700">৳{{ "%.2f"|format(total_expense) }}</span>
+                            </div>
+                            <div class="flex justify-between items-center p-4 bg-blue-500/10 rounded-xl">
+                                <span class="font-bold text-blue-700">Net Balance</span>
+                                <span class="font-extrabold text-blue-700">৳{{ "%.2f"|format(total_balance) }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <div class="mobile-bottom-nav md:hidden">
+        <a onclick="switchSection('dashboard-section', this)" class="mobile-nav-item active"><i class="fa-solid fa-house"></i><span>Home</span></a>
+        <a onclick="switchSection('transactions-section', this)" class="mobile-nav-item"><i class="fa-solid fa-wallet"></i><span>Records</span></a>
+        
+        <a onclick="document.getElementById('transactionModal').classList.remove('hidden')" class="mobile-nav-item relative" style="top: -20px; flex: 0.8;">
+            <div class="w-14 h-14 rounded-full bg-[var(--primary)] text-white flex items-center justify-center shadow-lg shadow-orange-500/40 border-[4px] border-[var(--bg)] transition-transform active:scale-95">
+                <i class="fa-solid fa-plus text-xl !mb-0"></i>
+            </div>
+        </a>
+        
+        <a onclick="switchSection('budgets-section', this)" class="mobile-nav-item"><i class="fa-solid fa-bullseye"></i><span>Budget</span></a>
+        <a onclick="switchSection('ai-section', this)" class="mobile-nav-item"><i class="fa-solid fa-robot"></i><span>AI Assist</span></a>
+    </div>
+
+    <div id="profileModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center overflow-y-auto py-10">
+        <div class="bg-[var(--card)] w-full max-w-2xl p-6 md:p-8 rounded-3xl border border-[var(--border)] shadow-2xl relative my-auto mx-4">
+            <button onclick="document.getElementById('profileModal').classList.add('hidden')" class="absolute top-4 right-4 text-[var(--text-sub)] hover:text-red-500"><i class="fa-solid fa-xmark text-xl"></i></button>
+            <h3 class="text-xl font-bold mb-6">Profile Settings</h3>
+            
+            <form action="{{ url_for('update_profile') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
+                
+                <div class="flex flex-col items-center justify-center mb-6">
+                    <div class="relative group cursor-pointer" onclick="document.getElementById('profile_picture').click()">
+                        <div class="w-24 h-24 rounded-full bg-[var(--primary)] flex items-center justify-center text-white font-bold text-2xl shadow-lg overflow-hidden border-4 border-[var(--bg)]" id="profileImagePreview">
+                            {% if user and user.avatar_url %}
+                                <img src="{{ user.avatar_url }}" class="w-full h-full object-cover" referrerpolicy="no-referrer">
+                            {% else %}
+                                {{ user.name[0] if user else 'U' }}
+                            {% endif %}
+                        </div>
+                        <div class="absolute inset-0 bg-black/50 rounded-full opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                            <i class="fa-solid fa-camera text-white text-xl"></i>
+                        </div>
+                    </div>
+                    <p class="text-[10px] text-[var(--text-sub)] mt-2 font-bold uppercase tracking-widest">Max size: 2MB (Click to change)</p>
+                    <input type="file" id="profile_picture" name="profile_picture" accept="image/png, image/jpeg, image/jpg, image/webp" class="hidden" onchange="previewImage(event)">
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-[var(--text-sub)] mb-1">First Name</label>
+                        <input type="text" name="name" value="{{ user.name or '' }}" required class="w-full bg-transparent border border-[var(--border)] rounded-xl px-4 py-2.5 outline-none focus:border-[var(--primary)] text-[var(--text-main)] text-sm font-semibold">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-[var(--text-sub)] mb-1">Last Name</label>
+                        <input type="text" name="last_name" value="{{ user.last_name or '' }}" class="w-full bg-transparent border border-[var(--border)] rounded-xl px-4 py-2.5 outline-none focus:border-[var(--primary)] text-[var(--text-main)] text-sm font-semibold">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-[var(--text-sub)] mb-1">Phone Number (Can be removed)</label>
+                        <input type="tel" name="phone" value="{{ user.phone or '' }}" maxlength="11" class="w-full bg-transparent border border-[var(--border)] rounded-xl px-4 py-2.5 outline-none focus:border-[var(--primary)] text-[var(--text-main)] text-sm font-semibold">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-[var(--text-sub)] mb-1">Date of Birth</label>
+                        <input type="date" name="date_of_birth" value="{{ user.date_of_birth.strftime('%Y-%m-%d') if user.date_of_birth else '' }}" class="w-full bg-transparent border border-[var(--border)] rounded-xl px-4 py-2.5 outline-none focus:border-[var(--primary)] text-[var(--text-main)] text-sm font-semibold">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-[var(--text-sub)] mb-1">Gender</label>
+                        <select name="gender" class="w-full bg-transparent border border-[var(--border)] rounded-xl px-4 py-2.5 outline-none focus:border-[var(--primary)] text-[var(--text-main)] text-sm font-semibold">
+                            <option value="">Select (Or leave blank to remove)</option>
+                            <option value="Male" {% if user.gender == 'Male' %}selected{% endif %}>Male</option>
+                            <option value="Female" {% if user.gender == 'Female' %}selected{% endif %}>Female</option>
+                            <option value="Other" {% if user.gender == 'Other' %}selected{% endif %}>Other</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-[var(--text-sub)] mb-1">NID Number (Can be removed)</label>
+                        <input type="text" name="nid_number" value="{{ user.nid_number or '' }}" maxlength="17" class="w-full bg-transparent border border-[var(--border)] rounded-xl px-4 py-2.5 outline-none focus:border-[var(--primary)] text-[var(--text-main)] text-sm font-semibold">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-[var(--text-sub)] mb-1">Division</label>
+                        <select name="division" id="userDivSelect" class="w-full bg-transparent border border-[var(--border)] rounded-xl px-4 py-2.5 outline-none focus:border-[var(--primary)] text-[var(--text-main)] text-sm font-semibold">
+                            <option value="">Select Division</option>
+                            {% for d in ['Dhaka','Chittagong','Rajshahi','Khulna','Barisal','Sylhet','Rangpur','Mymensingh'] %}
+                                <option value="{{ d }}" {% if user.division == d %}selected{% endif %}>{{ d }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-[var(--text-sub)] mb-1">District</label>
+                        <select name="district" id="userDistSelect" class="w-full bg-transparent border border-[var(--border)] rounded-xl px-4 py-2.5 outline-none focus:border-[var(--primary)] text-[var(--text-main)] text-sm font-semibold">
+                            <option value="{{ user.district or '' }}" selected>{{ user.district or 'Select Division First' }}</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-premium w-full py-3.5 mt-6 font-bold shadow-lg shadow-orange-500/20 text-sm"><i class="fa-solid fa-cloud-arrow-up mr-2"></i> Save Information</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="transactionModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center">
+        <div class="bg-[var(--card)] w-full max-w-md p-8 rounded-3xl border border-[var(--border)] shadow-2xl relative">
+            <button onclick="document.getElementById('transactionModal').classList.add('hidden')" class="absolute top-4 right-4 text-[var(--text-sub)] hover:text-red-500"><i class="fa-solid fa-xmark text-xl"></i></button>
+            <h3 class="text-xl font-bold mb-6">Add New Record</h3>
+            
+            <form action="{{ url_for('add_transaction') }}" method="POST" class="space-y-4">
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <label class="cursor-pointer">
+                        <input type="radio" name="type" value="expense" class="peer sr-only" checked>
+                        <div class="text-center p-3 rounded-xl border border-[var(--border)] font-semibold peer-checked:bg-red-500/10 peer-checked:border-red-500 peer-checked:text-red-500 transition">Expense</div>
+                    </label>
+                    <label class="cursor-pointer">
+                        <input type="radio" name="type" value="income" class="peer sr-only">
+                        <div class="text-center p-3 rounded-xl border border-[var(--border)] font-semibold peer-checked:bg-green-500/10 peer-checked:border-green-500 peer-checked:text-green-500 transition">Income</div>
+                    </label>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-[var(--text-sub)] mb-1">Amount (৳)</label>
+                    <input type="number" name="amount" required class="w-full bg-transparent border border-[var(--border)] rounded-xl px-4 py-3 outline-none focus:border-[var(--primary)] text-[var(--text-main)]" placeholder="0.00">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-[var(--text-sub)] mb-1">Description</label>
+                    <input type="text" name="description" required class="w-full bg-transparent border border-[var(--border)] rounded-xl px-4 py-3 outline-none focus:border-[var(--primary)] text-[var(--text-main)]" placeholder="e.g. Uber, Salary, Food">
+                    <p class="text-[10px] text-purple-500 mt-1 font-semibold"><i class="fa-solid fa-wand-magic-sparkles"></i> AI will automatically categorize based on description (FR-06).</p>
+                </div>
+
+                <button type="submit" class="btn-premium w-full py-3 mt-4">Save Record</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="editTransactionModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center">
+        <div class="bg-[var(--card)] w-full max-w-md p-8 rounded-3xl border border-[var(--border)] shadow-2xl relative">
+            <button onclick="document.getElementById('editTransactionModal').classList.add('hidden')" class="absolute top-4 right-4 text-[var(--text-sub)] hover:text-red-500"><i class="fa-solid fa-xmark text-xl"></i></button>
+            <h3 class="text-xl font-bold mb-6">Edit Record</h3>
+            
+            <form id="editTransactionForm" method="POST" class="space-y-4">
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <label class="cursor-pointer">
+                        <input type="radio" name="type" id="edit_type_expense" value="expense" class="peer sr-only">
+                        <div class="text-center p-3 rounded-xl border border-[var(--border)] font-semibold peer-checked:bg-red-500/10 peer-checked:border-red-500 peer-checked:text-red-500 transition">Expense</div>
+                    </label>
+                    <label class="cursor-pointer">
+                        <input type="radio" name="type" id="edit_type_income" value="income" class="peer sr-only">
+                        <div class="text-center p-3 rounded-xl border border-[var(--border)] font-semibold peer-checked:bg-green-500/10 peer-checked:border-green-500 peer-checked:text-green-500 transition">Income</div>
+                    </label>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-[var(--text-sub)] mb-1">Amount (৳)</label>
+                    <input type="number" name="amount" id="edit_amount" required class="w-full bg-transparent border border-[var(--border)] rounded-xl px-4 py-3 outline-none focus:border-[var(--primary)] text-[var(--text-main)]">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-[var(--text-sub)] mb-1">Description</label>
+                    <input type="text" name="description" id="edit_description" required class="w-full bg-transparent border border-[var(--border)] rounded-xl px-4 py-3 outline-none focus:border-[var(--primary)] text-[var(--text-main)]">
+                </div>
+
+                <button type="submit" class="btn-premium w-full py-3 mt-4 bg-blue-500 hover:shadow-blue-500/30">Update Record</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="goalModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center">
+        <div class="bg-[var(--card)] w-full max-w-md p-8 rounded-3xl border border-[var(--border)] shadow-2xl relative">
+            <button onclick="document.getElementById('goalModal').classList.add('hidden')" class="absolute top-4 right-4 text-[var(--text-sub)] hover:text-red-500"><i class="fa-solid fa-xmark text-xl"></i></button>
+            <h3 class="text-xl font-bold mb-6">Create Savings Goal</h3>
+            
+            <form action="{{ url_for('add_goal') }}" method="POST" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold text-[var(--text-sub)] mb-1">Goal Name</label>
+                    <input type="text" name="goal_name" required class="w-full bg-transparent border border-[var(--border)] rounded-xl px-4 py-3 outline-none focus:border-[var(--primary)] text-[var(--text-main)]" placeholder="e.g. New MacBook">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-[var(--text-sub)] mb-1">Target Amount (৳)</label>
+                    <input type="number" name="target_amount" required class="w-full bg-transparent border border-[var(--border)] rounded-xl px-4 py-3 outline-none focus:border-[var(--primary)] text-[var(--text-main)]" placeholder="50000">
+                </div>
+
+                <button type="submit" class="btn-premium w-full py-3 mt-4 bg-blue-500 hover:shadow-blue-500/30">Save Goal</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="addFundsModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center">
+        <div class="bg-[var(--card)] w-full max-w-md p-8 rounded-3xl border border-[var(--border)] shadow-2xl relative">
+            <button onclick="document.getElementById('addFundsModal').classList.add('hidden')" class="absolute top-4 right-4 text-[var(--text-sub)] hover:text-red-500"><i class="fa-solid fa-xmark text-xl"></i></button>
+            <h3 class="text-xl font-bold mb-2">Fund Transfer</h3>
+            <p class="text-sm text-[var(--text-sub)] mb-6">Transfer money from Main Balance to: <strong id="addFundsGoalName" class="text-[var(--text-main)]"></strong></p>
+            
+            <form id="addFundsForm" method="POST" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold text-[var(--text-sub)] mb-1">Amount to Transfer (৳)</label>
+                    <input type="number" name="amount" required class="w-full bg-transparent border border-[var(--border)] rounded-xl px-4 py-3 outline-none focus:border-[var(--primary)] text-[var(--text-main)]" placeholder="e.g. 5000">
+                    <p class="text-[10px] text-[var(--text-sub)] mt-1">This will be added as an Expense (Savings) to your Main Balance.</p>
+                </div>
+
+                <button type="submit" class="btn-premium w-full py-3 mt-4 bg-green-500 hover:shadow-green-500/30"><i class="fa-solid fa-check mr-2"></i> Confirm Transfer</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // SPA Section Switching Logic (Synced for Desktop & Mobile)
+        function switchSection(sectionId, clickedElement) {
+            // Hide all sections
+            document.querySelectorAll('.app-section').forEach(section => {
+                section.classList.remove('active-section');
+            });
+            // Show target section
+            document.getElementById(sectionId).classList.add('active-section');
+
+            // Update Desktop Sidebar UI active states
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+                item.classList.add('text-[var(--text-sub)]');
+            });
+            
+            if(clickedElement && clickedElement.classList.contains('nav-item')) {
+                clickedElement.classList.remove('text-[var(--text-sub)]');
+                clickedElement.classList.add('active');
+            }
+
+            // Sync Mobile Bottom Nav
+            document.querySelectorAll('.mobile-nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            const mobileTarget = document.querySelector(`.mobile-nav-item[onclick*="${sectionId}"]`);
+            if(mobileTarget) mobileTarget.classList.add('active');
+            
+            // Sync Desktop Sidebar if mobile was clicked
+            if(clickedElement && clickedElement.classList.contains('mobile-nav-item')) {
+                const desktopTarget = document.querySelector(`.nav-item[onclick*="${sectionId}"]`);
+                if(desktopTarget) {
+                    desktopTarget.classList.remove('text-[var(--text-sub)]');
+                    desktopTarget.classList.add('active');
+                }
+            }
+            
+            // Scroll to top smoothly
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Custom Dropdown Logic
+        function toggleDropdown(menuId) {
+            // Close others first
+            document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                if(menu.id !== menuId) menu.classList.remove('show');
+            });
+            // Toggle target
+            document.getElementById(menuId).classList.toggle('show');
+        }
+
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function(event) {
+            if (!event.target.closest('header .relative')) {
+                document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                    menu.classList.remove('show');
+                });
+            }
+        });
+
+        // Dark Mode Toggle
+        const themeBtn = document.getElementById('theme-toggle');
+        themeBtn.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            themeBtn.innerHTML = document.body.classList.contains('dark-mode') ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+            showToast(document.body.classList.contains('dark-mode') ? 'Dark mode enabled' : 'Light mode enabled', 'success');
+        });
+
+        // Profile Picture File Upload Validation & Preview
+        function previewImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                if (file.size > 2 * 1024 * 1024) { // 2MB Limit
+                    showToast("Profile image must be smaller than 2MB", "error");
+                    event.target.value = ''; 
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const previewDiv = document.getElementById('profileImagePreview');
+                    previewDiv.innerHTML = `<img src="${e.target.result}" class="w-full h-full object-cover">`;
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function openProfileModal() {
+            document.getElementById('profileModal').classList.remove('hidden');
+            document.getElementById('profile-menu').classList.remove('show');
+        }
+
+        // District Data population logic for Profile Modal
+        const districtsData = {
+            Dhaka: ["Dhaka","Gazipur","Narayanganj","Narsingdi","Manikganj","Munshiganj","Rajbari","Faridpur","Madaripur","Shariatpur","Gopalganj","Kishoreganj","Tangail","Netrokona","Mymensingh","Jamalpur","Sherpur"],
+            Chittagong: ["Chittagong","Cox's Bazar","Rangamati","Bandarban","Khagrachhari","Feni","Lakshmipur","Noakhali","Comilla","Chandpur","Brahmanbaria"],
+            Rajshahi: ["Rajshahi","Natore","Pabna","Sirajganj","Bogra","Joypurhat","Naogaon","Chapainawabganj"],
+            Khulna: ["Khulna","Bagerhat","Satkhira","Jessore","Magura","Narail","Jhenaidah","Kushtia","Chuadanga","Meherpur"],
+            Barisal: ["Barisal","Bhola","Patuakhali","Pirojpur","Jhalokati","Barguna"],
+            Sylhet: ["Sylhet","Moulvibazar","Habiganj","Sunamganj"],
+            Rangpur: ["Rangpur","Dinajpur","Thakurgaon","Panchagarh","Nilphamari","Lalmonirhat","Kurigram","Gaibandha"],
+            Mymensingh: ["Mymensingh","Netrokona","Kishoreganj","Jamalpur","Sherpur"]
+        };
+
+        document.getElementById('userDivSelect').addEventListener('change', function() {
+            const distSelect = document.getElementById('userDistSelect');
+            distSelect.innerHTML = '<option value="">Select District</option>';
+            if (districtsData[this.value]) {
+                districtsData[this.value].forEach(d => {
+                    const opt = document.createElement('option');
+                    opt.value = d; opt.textContent = d;
+                    distSelect.appendChild(opt);
+                });
+            }
+        });
+
+        // Edit Transaction Function
+        function openEditModal(id, type, amount, description, e) {
+            if (e) e.stopPropagation();
+            document.getElementById('editTransactionForm').action = '/api/transaction/' + id + '/update';
+            document.getElementById('edit_amount').value = amount;
+            document.getElementById('edit_description').value = description;
+            if (type === 'income') {
+                document.getElementById('edit_type_income').checked = true;
+            } else {
+                document.getElementById('edit_type_expense').checked = true;
+            }
+            document.getElementById('editTransactionModal').classList.remove('hidden');
+        }
+
+        // Add Funds to Goal Function
+        function openAddFundsModal(id, goalName) {
+            document.getElementById('addFundsForm').action = '/api/goal/' + id + '/add_funds';
+            document.getElementById('addFundsGoalName').innerText = goalName;
+            document.getElementById('addFundsModal').classList.remove('hidden');
+        }
+
+        // Modified Dynamic Toast Notification System
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = 'toast-notification';
+            const icon = type === 'success' ? 'fa-circle-check text-green-500' : 'fa-circle-exclamation text-red-500';
+            toast.innerHTML = `<i class="fa-solid ${icon}"></i> <span>${message}</span>`;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => toast.classList.add('show'), 50);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Chart.js Configuration - 3D Animated Smart Bar Chart
+        const ctx = document.getElementById('expenseChart').getContext('2d');
+
+        // 3D Gradient fills — lighter top, darker bottom for depth shading
+        const incomeGradient = ctx.createLinearGradient(0, 0, 0, 280);
+        incomeGradient.addColorStop(0,    'rgba(34, 197, 94, 0.95)');
+        incomeGradient.addColorStop(0.55, 'rgba(34, 197, 94, 0.78)');
+        incomeGradient.addColorStop(1,    'rgba(21, 128, 61, 0.90)');
+
+        const expenseGradient = ctx.createLinearGradient(0, 0, 0, 280);
+        expenseGradient.addColorStop(0,    'rgba(239, 68, 68, 0.95)');
+        expenseGradient.addColorStop(0.55, 'rgba(239, 68, 68, 0.78)');
+        expenseGradient.addColorStop(1,    'rgba(185, 28, 28, 0.90)');
+
+        // Value Labels Plugin — shows ৳ amount above each bar
+        const valueLabelPlugin = {
+            id: 'valueLabelPlugin',
+            afterDatasetsDraw(chart) {
+                const c = chart.ctx;
+                chart.data.datasets.forEach((dataset, di) => {
+                    const meta = chart.getDatasetMeta(di);
+                    if (meta.hidden) return;
+                    meta.data.forEach((bar, idx) => {
+                        const val = dataset.data[idx];
+                        if (val > 0) {
+                            const lbl = val >= 1000 ? '\u09f3' + (val / 1000).toFixed(1) + 'k' : '\u09f3' + val;
+                            c.save();
+                            c.fillStyle    = di === 0 ? '#15803d' : '#b91c1c';
+                            c.font         = 'bold 9px "Plus Jakarta Sans", sans-serif';
+                            c.textAlign    = 'center';
+                            c.fillText(lbl, bar.x, bar.y - 10);
+                            c.restore();
+                        }
+                    });
+                });
+            }
+        };
+
+        const dynamicLabels  = {{ chart_labels  | safe }};
+        const dynamicIncome  = {{ chart_income  | safe }};
+        const dynamicExpense = {{ chart_expense | safe }};
+
+        const expenseChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: dynamicLabels,
+                datasets: [
+                    {
+                        label: 'Income',
+                        data: dynamicIncome,
+                        backgroundColor: incomeGradient,
+                        borderRadius: { topLeft: 9, topRight: 9 },
+                        borderSkipped: 'bottom',
+                        barPercentage: 0.38,
+                        categoryPercentage: 0.78,
+                        hoverBackgroundColor: 'rgba(34, 197, 94, 1)',
+                        borderWidth: 0
+                    },
+                    {
+                        label: 'Expense',
+                        data: dynamicExpense,
+                        backgroundColor: expenseGradient,
+                        borderRadius: { topLeft: 9, topRight: 9 },
+                        borderSkipped: 'bottom',
+                        barPercentage: 0.38,
+                        categoryPercentage: 0.78,
+                        hoverBackgroundColor: 'rgba(239, 68, 68, 1)',
+                        borderWidth: 0
+                    }
+                ]
+            },
+            plugins: [valueLabelPlugin],
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: {
+                    duration: 1100,
+                    easing: 'easeOutElastic',
+                    delay: context => context.dataIndex * 90
+                },
+                interaction: { mode: 'nearest', intersect: true },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: 'rgba(15, 23, 42, 0.92)',
+                        borderColor: 'rgba(255,255,255,0.1)',
+                        borderWidth: 1,
+                        padding: 14,
+                        titleFont: { size: 12, weight: 'bold' },
+                        bodyFont: { size: 12, weight: '600' },
+                        cornerRadius: 12,
+                        displayColors: true,
+                        boxPadding: 5,
+                        callbacks: {
+                            title: ctx => {
+                                let dateStr = ctx[0].label;
+                                if (dateStr !== 'No Data' && !dateStr.includes(',')) {
+                                    dateStr += ', ' + new Date().getFullYear();
+                                }
+                                return dateStr;
+                            },
+                            label: ctx => ` ${ctx.dataset.label}: \u09f3${Number(ctx.parsed.y).toLocaleString('en-IN')}`
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        grid: { color: 'rgba(0,0,0,0.04)', borderDash: [5, 5] },
+                        ticks: {
+                            color: '#64748b',
+                            font: { weight: '600', size: 11 },
+                            callback: v => '\u09f3' + (v >= 1000 ? v / 1000 + 'k' : v)
+                        },
+                        beginAtZero: true
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: '#64748b', font: { weight: '600', size: 11 } }
+                    }
+                }
+            }
+        });
+
+        // Real-time chart refresh: fetch latest data from database every 5 seconds
+        async function refreshChart() {
+            try {
+                const res = await fetch('/api/chart-data');
+                const data = await res.json();
+                expenseChart.data.labels           = data.labels;
+                expenseChart.data.datasets[0].data = data.income;
+                expenseChart.data.datasets[1].data = data.expense;
+                expenseChart.update('active');
+            } catch (e) {
+                console.warn('Chart auto-refresh skipped:', e);
+            }
+        }
+        // First immediate fetch on load, then repeat every 5 seconds
+        refreshChart();
+        setInterval(refreshChart, 5000);
+
+                // 2. Pie Chart (Categories Analytics)
+        const pieCtx = document.getElementById('categoryChart').getContext('2d');
+        const pieLabels = {{ pie_labels | safe }};
+        const pieData = {{ pie_data | safe }};
+        
+        new Chart(pieCtx, {
+            type: 'doughnut',
+            data: {
+                labels: pieLabels,
+                datasets: [{
+                    data: pieData,
+                    backgroundColor: ['#f58220', '#ef4444', '#3b82f6', '#10b981', '#8b5cf6', '#64748b'],
+                    borderWidth: 0,
+                    hoverOffset: 8
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { 
+                    legend: { position: 'right', labels: { color: '#64748b', font: { size: 12, weight: 'bold' } } }
+                },
+                cutout: '75%',
+                layout: { padding: 10 }
+            }
+        });
+    </script>
+</body>
+</html>
