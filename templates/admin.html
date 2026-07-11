@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Admin Profile | FinoraXpense</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        
+        html, body, main {
+            -webkit-overflow-scrolling: touch; /* Added for ultra-smooth mobile scrolling */
+        }
+
+        :root {
+            --primary: #f58220; 
+            --bg: #f8fafc;
+            --text-main: #0f172a;
+            --text-sub: #64748b;
+            --card: #ffffff;
+            --border: rgba(0,0,0,0.06);
+            --glass: rgba(255, 255, 255, 0.7);
+        }
+
+        .dark-mode {
+            --bg: #020617;
+            --text-main: #f8fafc;
+            --text-sub: #94a3b8;
+            --card: #0f172a;
+            --border: rgba(255,255,255,0.1);
+            --glass: rgba(2, 6, 23, 0.7);
+        }
+        
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            transition: background 0.5s ease, color 0.5s ease;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .app-section {
+            display: none;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeIntoDashboard 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .app-section.active-section {
+            display: block;
+        }
+
+        @keyframes fadeIntoDashboard {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .glass-panel {
+            background: var(--glass);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid var(--border);
+            box-shadow: 0 10px 40px -10px rgba(0,0,0,0.05);
+        }
+
+        .btn-premium {
+            background: var(--primary);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 14px;
+            font-weight: 700;
+            font-size: 13px;
+            transition: 0.3s;
+            cursor: pointer;
+        }
+        .btn-premium:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(245, 130, 32, 0.2);
+        }
+
+        .nav-item {
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border-right: 3px solid transparent;
+        }
+        .nav-item:hover, .nav-item.active {
+            background: rgba(245, 130, 32, 0.1);
+            color: var(--primary) !important;
+            border-right: 3px solid var(--primary);
+        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        
+        .toast-notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--card);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            padding: 16px 24px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transform: translateY(50px);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .toast-notification.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 10px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            width: 250px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 50;
+        }
+        .dropdown-menu.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        /* Mobile Bottom Nav Styles (UPDATED: Docked to bottom, non-floating) */
+        .mobile-bottom-nav { position: fixed; bottom: 0; left: 0; transform: none; width: 100%; max-width: 100%; background: var(--glass); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-top: 1px solid var(--border); border-radius: 24px 24px 0 0; display: flex; justify-content: space-around; align-items: center; padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); z-index: 1001; box-shadow: 0 -5px 25px -5px rgba(0,0,0,0.1); }
+        .dark-mode .mobile-bottom-nav { box-shadow: 0 -5px 25px -5px rgba(0,0,0,0.4); }
+        .mobile-nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--text-sub); flex: 1; transition: color 0.2s ease; cursor: pointer; text-decoration: none; -webkit-tap-highlight-color: transparent; }
+        .mobile-nav-item.active { color: var(--primary); }
+        .mobile-nav-item i { font-size: 20px; margin-bottom: 2px; transition: transform 0.2s ease; }
+        .mobile-nav-item:active i { transform: scale(0.9); }
+        .mobile-nav-item span { font-size: 10px; font-weight: 700; }
+
+        a, button, .mobile-nav-item, .nav-item, .glass-panel {
+            touch-action: manipulation;
+        }
+
+        @media (hover: none) and (pointer: coarse) {
+            * { cursor: auto !important; }
+            
+            /* ADDED: Immediate touch feedback for mobile for faster feel */
+            a:active, button:active, input:active, select:active, .btn-premium:active, .mobile-nav-item:active, .nav-item:active, .glass-panel[onclick]:active {
+                transform: scale(0.96) !important;
+                transition: transform 0.05s ease-out !important;
+            }
+            
+            body, main {
+                overscroll-behavior-y: none; /* Prevents pull-to-refresh lag */
+            }
+        }
+        
+        /* ===== ADDED FOR MOBILE LAYOUT PERFECT FIT ===== */
+        @media (max-width: 767px) {
+            main { padding-bottom: 110px !important; } /* Prevents content hiding under bottom nav */
+        }
+    </style>
+</head>
+<body class="flex h-screen antialiased overflow-hidden">
+
+    <aside class="w-64 shrink-0 glass-panel flex flex-col h-full hidden md:flex z-20 border-r border-[var(--border)] relative">
+        <div class="h-20 shrink-0 flex items-center px-8 border-b border-[var(--border)]">
+            <img src="{{ url_for('static', filename='FinoraXpense_Logo.png') }}" alt="Logo" class="h-8" onerror="this.style.display='none'">
+        </div>
+        <nav class="flex-1 py-6 flex flex-col gap-2 px-4 overflow-y-auto">
+            <p class="text-[10px] font-bold text-[var(--text-sub)] uppercase tracking-widest px-4 mb-2">Admin Panel</p>
+            <a onclick="switchSection('overview-section', this)" class="nav-item active flex items-center gap-4 px-4 py-3 rounded-xl font-semibold">
+                <i class="fa-solid fa-chart-pie"></i> System Overview
+            </a>
+            <a onclick="switchSection('users-section', this)" class="nav-item flex items-center gap-4 px-4 py-3 rounded-xl font-semibold text-[var(--text-sub)]">
+                <i class="fa-solid fa-users"></i> Manage Users
+            </a>
+            <a onclick="switchSection('analytics-section', this)" class="nav-item flex items-center gap-4 px-4 py-3 rounded-xl font-semibold text-[var(--text-sub)]">
+                <i class="fa-solid fa-server"></i> System Analytics
+            </a>
+        </nav>
+        <div class="p-4 border-t border-[var(--border)]">
+            <a href="{{ url_for('logout') }}" class="flex items-center gap-4 px-4 py-3 rounded-xl font-semibold text-red-500 hover:bg-red-500/10 transition-colors">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i> Logout
+            </a>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col h-full relative overflow-y-auto bg-[var(--bg)] pb-28 md:pb-0">
+        
+        <header class="h-20 shrink-0 glass-panel sticky top-0 z-10 flex items-center justify-between px-6 md:px-8">
+            <div class="flex items-center gap-4">
+                <h2 class="text-xl font-bold">Admin Portal <span class="text-xs bg-[var(--primary)] text-white px-2 py-1 rounded-full ml-2">PRO</span></h2>
+            </div>
+            
+            <div class="flex items-center gap-4 md:gap-6 relative">
+                <button id="theme-toggle" class="text-[var(--text-sub)] hover:text-[var(--primary)] transition text-xl cursor-pointer"><i class="fa-solid fa-moon"></i></button>
+                
+                <div class="relative">
+                    <div onclick="toggleDropdown('profile-menu')" class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold shadow-md cursor-pointer hover:opacity-80 transition">
+                        <i class="fa-solid fa-user-shield"></i>
+                    </div>
+                    <div id="profile-menu" class="dropdown-menu p-3">
+                        <div class="flex items-center gap-3 p-2 border-b border-[var(--border)] mb-2">
+                            <div class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold"><i class="fa-solid fa-user-shield"></i></div>
+                            <div>
+                                <p class="text-sm font-bold text-[var(--text-main)]">{{ user.name if user else 'Admin' }}</p>
+                                <p class="text-xs text-[var(--primary)] font-bold">Super Admin</p>
+                            </div>
+                        </div>
+                        <a href="{{ url_for('logout') }}" class="block px-4 py-2 hover:bg-red-500/10 text-red-500 rounded-xl transition text-sm font-semibold"><i class="fa-solid fa-arrow-right-from-bracket mr-2"></i> Logout</a>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="p-6 md:p-8 max-w-7xl mx-auto w-full space-y-8">
+            
+            <div id="overview-section" class="app-section active-section space-y-8">
+                <div class="flex justify-between items-center mb-6 border-b border-[var(--border)] pb-4">
+                    <h2 class="text-2xl font-bold">Platform Overview</h2>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div class="glass-panel p-6 rounded-2xl bg-[var(--card)] hover:shadow-lg transition">
+                        <div class="flex items-center gap-4 mb-4">
+                            <div class="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-500"><i class="fa-solid fa-users"></i></div>
+                            <p class="text-sm font-bold text-[var(--text-sub)]">Total Users</p>
+                        </div>
+                        <p class="text-3xl font-bold">{{ user_count }}</p>
+                    </div>
+                    
+                    <div class="glass-panel p-6 rounded-2xl bg-[var(--card)] hover:shadow-lg transition">
+                        <div class="flex items-center gap-4 mb-4">
+                            <div class="w-10 h-10 rounded-full bg-[var(--primary)]/20 flex items-center justify-center text-[var(--primary)]"><i class="fa-solid fa-money-bill-transfer"></i></div>
+                            <p class="text-sm font-bold text-[var(--text-sub)]">Total Transactions</p>
+                        </div>
+                        <p class="text-3xl font-bold">{{ sys_tx_count|default(0) }}</p>
+                    </div>
+
+                    <div class="glass-panel p-6 rounded-2xl bg-[var(--card)] hover:shadow-lg transition">
+                        <div class="flex items-center gap-4 mb-4">
+                            <div class="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center text-green-500"><i class="fa-solid fa-arrow-trend-up"></i></div>
+                            <p class="text-sm font-bold text-[var(--text-sub)]">System Income</p>
+                        </div>
+                        <p class="text-xl font-bold text-green-500">৳ {{ "%.2f"|format(sys_total_income|default(0)) }}</p>
+                    </div>
+
+                    <div class="glass-panel p-6 rounded-2xl bg-[var(--card)] hover:shadow-lg transition">
+                        <div class="flex items-center gap-4 mb-4">
+                            <div class="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center text-red-500"><i class="fa-solid fa-arrow-trend-down"></i></div>
+                            <p class="text-sm font-bold text-[var(--text-sub)]">System Expense</p>
+                        </div>
+                        <p class="text-xl font-bold text-red-500">৳ {{ "%.2f"|format(sys_total_expense|default(0)) }}</p>
+                    </div>
+                </div>
+
+                <div class="glass-panel p-6 rounded-2xl bg-[var(--card)]">
+                    <h3 class="font-bold text-lg mb-4">Platform Activity Trend</h3>
+                    <div class="h-64 w-full"><canvas id="adminActivityChart"></canvas></div>
+                </div>
+            </div>
+
+            <div id="users-section" class="app-section space-y-6">
+                <div class="flex justify-between items-center mb-6 border-b border-[var(--border)] pb-4">
+                    <h2 class="text-2xl font-bold">Manage Users</h2>
+                </div>
+                
+                <div class="glass-panel p-6 rounded-2xl bg-[var(--card)] overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="text-[var(--text-sub)] text-sm border-b border-[var(--border)]">
+                                <th class="pb-3 px-4 font-semibold">User Details</th>
+                                <th class="pb-3 px-4 font-semibold">NID Number</th>
+                                <th class="pb-3 px-4 font-semibold">Joined Date</th>
+                                <th class="pb-3 px-4 font-semibold">Status</th>
+                                <th class="pb-3 px-4 font-semibold text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="userTableBody">
+                            {% for u in detailed_users %}
+                            <tr class="border-b border-[var(--border)] hover:bg-[var(--bg)] transition" id="user-row-{{ u.id }}">
+                                <td class="py-4 px-4">
+                                    <p class="font-bold text-sm">{{ u.name }} {{ u.last_name or '' }} {% if u.is_admin %}<span class="text-[8px] bg-blue-500 text-white px-2 py-0.5 rounded ml-1">ADMIN</span>{% endif %}</p>
+                                    <p class="text-xs text-[var(--text-sub)]">{{ u.email }}</p>
+                                </td>
+                                <td class="py-4 px-4 text-sm font-semibold">{{ u.nid_number or 'Not Provided' }}</td>
+                                <td class="py-4 px-4 text-sm font-semibold">{{ u.created_at.strftime('%d %b, %Y') }}</td>
+                                <td class="py-4 px-4" id="status-td-{{ u.id }}">
+                                    {% if u.is_verified %}
+                                    <span class="px-2 py-1 rounded text-xs font-bold bg-green-500/10 text-green-600"><i class="fa-solid fa-check-circle mr-1"></i>Verified</span>
+                                    {% else %}
+                                    <span class="px-2 py-1 rounded text-xs font-bold bg-orange-500/10 text-orange-600"><i class="fa-solid fa-clock mr-1"></i>Pending</span>
+                                    {% endif %}
+                                </td>
+                                <td class="py-4 px-4 text-right">
+                                    <div class="flex items-center justify-end gap-2">
+                                        {% if not u.is_verified %}
+                                        <button onclick="verifyUser({{ u.id }})" id="verify-btn-{{ u.id }}" class="w-8 h-8 rounded-full bg-green-500/10 text-green-500 hover:bg-green-500 hover:text-white transition shadow-sm" title="Verify User"><i class="fa-solid fa-check text-xs"></i></button>
+                                        {% endif %}
+                                        
+                                        {% if not u.is_admin %}
+                                        <button onclick="deleteUser({{ u.id }})" class="w-8 h-8 rounded-full bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition shadow-sm" title="Delete User"><i class="fa-solid fa-trash text-xs"></i></button>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr><td colspan="5" class="text-center py-8 text-[var(--text-sub)] font-semibold">No users found.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="analytics-section" class="app-section space-y-6">
+                <div class="flex justify-between items-center mb-6 border-b border-[var(--border)] pb-4">
+                    <h2 class="text-2xl font-bold">System Analytics</h2>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="glass-panel p-6 rounded-2xl bg-[var(--card)]">
+                        <h3 class="font-bold text-lg mb-6">User Growth (Last 30 Days)</h3>
+                        <div class="h-64 w-full"><canvas id="userGrowthChart"></canvas></div>
+                    </div>
+                    <div class="glass-panel p-6 rounded-2xl bg-[var(--card)]">
+                        <h3 class="font-bold text-lg mb-6">Global Expense Categories</h3>
+                        <div class="h-64 w-full flex justify-center"><canvas id="adminCategoryChart"></canvas></div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <div class="mobile-bottom-nav md:hidden">
+        <a onclick="switchSection('overview-section', this)" class="mobile-nav-item active"><i class="fa-solid fa-chart-pie"></i><span>Overview</span></a>
+        <a onclick="switchSection('users-section', this)" class="mobile-nav-item"><i class="fa-solid fa-users"></i><span>Users</span></a>
+        <a onclick="switchSection('analytics-section', this)" class="mobile-nav-item"><i class="fa-solid fa-server"></i><span>Analytics</span></a>
+    </div>
+
+    <script>
+        // SPA Section Switching Logic (Synced for Desktop & Mobile)
+        function switchSection(sectionId, clickedElement) {
+            document.querySelectorAll('.app-section').forEach(section => {
+                section.classList.remove('active-section');
+            });
+            document.getElementById(sectionId).classList.add('active-section');
+
+            // Sync Desktop Sidebar
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+                item.classList.add('text-[var(--text-sub)]');
+            });
+            
+            if(clickedElement && clickedElement.classList.contains('nav-item')) {
+                clickedElement.classList.remove('text-[var(--text-sub)]');
+                clickedElement.classList.add('active');
+            }
+
+            // Sync Mobile Bottom Nav
+            document.querySelectorAll('.mobile-nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            const mobileTarget = document.querySelector(`.mobile-nav-item[onclick*="${sectionId}"]`);
+            if(mobileTarget) mobileTarget.classList.add('active');
+            
+            // Sync Desktop Sidebar if mobile was clicked
+            if(clickedElement && clickedElement.classList.contains('mobile-nav-item')) {
+                const desktopTarget = document.querySelector(`.nav-item[onclick*="${sectionId}"]`);
+                if(desktopTarget) {
+                    desktopTarget.classList.remove('text-[var(--text-sub)]');
+                    desktopTarget.classList.add('active');
+                }
+            }
+            
+            // Scroll to top smoothly
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Dropdown Logic
+        function toggleDropdown(menuId) {
+            document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                if(menu.id !== menuId) menu.classList.remove('show');
+            });
+            document.getElementById(menuId).classList.toggle('show');
+        }
+
+        document.addEventListener('click', function(event) {
+            if (!event.target.closest('header .relative')) {
+                document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                    menu.classList.remove('show');
+                });
+            }
+        });
+
+        // Dark Mode Toggle
+        const themeBtn = document.getElementById('theme-toggle');
+        if (localStorage.getItem('finance_theme') === 'dark') document.body.classList.add('dark-mode');
+        
+        themeBtn.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            themeBtn.innerHTML = document.body.classList.contains('dark-mode') ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+            showToast(document.body.classList.contains('dark-mode') ? 'Dark mode enabled' : 'Light mode enabled');
+        });
+
+        // Toast Notification System
+        function showToast(message, type='success') {
+            const toast = document.createElement('div');
+            toast.className = 'toast-notification';
+            const icon = type === 'success' ? 'fa-circle-check text-green-500' : 'fa-circle-exclamation text-red-500';
+            toast.innerHTML = `<i class="fa-solid ${icon}"></i> <span>${message}</span>`;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => toast.classList.add('show'), 50);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // API Integration: Verify User
+        async function verifyUser(userId) {
+            if(!confirm("Are you sure you want to verify this user?")) return;
+            try {
+                const res = await fetch(`/api/admin/users/${userId}/verify`, { method: 'POST' });
+                const data = await res.json();
+                if(data.success) {
+                    showToast("User verified successfully!");
+                    document.getElementById(`status-td-${userId}`).innerHTML = '<span class="px-2 py-1 rounded text-xs font-bold bg-green-500/10 text-green-600"><i class="fa-solid fa-check-circle mr-1"></i>Verified</span>';
+                    const btn = document.getElementById(`verify-btn-${userId}`);
+                    if(btn) btn.remove();
+                } else {
+                    showToast(data.error || "Verification failed", "error");
+                }
+            } catch (err) {
+                showToast("Network Error", "error");
+            }
+        }
+
+        // API Integration: Delete User
+        async function deleteUser(userId) {
+            if(!confirm("CRITICAL WARNING: Are you sure you want to permanently delete this user and all their records?")) return;
+            try {
+                const res = await fetch(`/api/admin/users/${userId}/delete`, { method: 'POST' });
+                const data = await res.json();
+                if(data.success) {
+                    showToast("User deleted successfully!");
+                    document.getElementById(`user-row-${userId}`).remove();
+                } else {
+                    showToast(data.error || "Deletion failed", "error");
+                }
+            } catch (err) {
+                showToast("Network Error", "error");
+            }
+        }
+
+        // Load Admin Analytics Data
+        async function loadAdminAnalytics() {
+            try {
+                const res = await fetch('/api/admin/analytics');
+                const data = await res.json();
+                
+                if (data.user_growth && data.user_growth.length > 0) {
+                    const ctxGrowth = document.getElementById('userGrowthChart').getContext('2d');
+                    new Chart(ctxGrowth, {
+                        type: 'line',
+                        data: {
+                            labels: data.user_growth.map(d => new Date(d.date).toLocaleDateString()),
+                            datasets: [{
+                                label: 'New Users',
+                                data: data.user_growth.map(d => d.count),
+                                borderColor: '#3b82f6',
+                                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                                borderWidth: 2,
+                                fill: true,
+                                tension: 0.4
+                            }]
+                        },
+                        options: {
+                            responsive: true, maintainAspectRatio: false,
+                            plugins: { legend: { display: false } },
+                            scales: {
+                                y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.04)' } },
+                                x: { grid: { display: false } }
+                            }
+                        }
+                    });
+                }
+
+                if (data.expense_categories && data.expense_categories.length > 0) {
+                    const ctxCat = document.getElementById('adminCategoryChart').getContext('2d');
+                    new Chart(ctxCat, {
+                        type: 'doughnut',
+                        data: {
+                            labels: data.expense_categories.map(d => d.category),
+                            datasets: [{
+                                data: data.expense_categories.map(d => d.total_amount),
+                                backgroundColor: ['#f58220', '#ef4444', '#3b82f6', '#10b981', '#8b5cf6', '#64748b'],
+                                borderWidth: 0
+                            }]
+                        },
+                        options: {
+                            responsive: true, maintainAspectRatio: false, cutout: '75%',
+                            plugins: { legend: { position: 'right' } }
+                        }
+                    });
+                }
+                
+                // Placeholder dummy chart for Activity if empty API
+                const ctxAct = document.getElementById('adminActivityChart').getContext('2d');
+                new Chart(ctxAct, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                        datasets: [{
+                            label: 'Platform Logins',
+                            data: [12, 19, 15, 25, 22, 30, 28],
+                            backgroundColor: '#f58220',
+                            borderRadius: 6
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+                });
+
+            } catch(e) { console.log("Analytics Error:", e); }
+        }
+
+        window.onload = loadAdminAnalytics;
+    </script>
+</body>
+</html>
