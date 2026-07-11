@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>FinoraXpense | Homepage</title>
+
+    <script>
+    (function(){
+        try {
+            var t = localStorage.getItem('finance_theme');
+            if (t === 'dark') {
+                document.documentElement.style.cssText = 'background:#020617!important;color:#f8fafc!important';
+            }
+        } catch(e) {}
+    })();
+    </script>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        
+        html {
+            -webkit-overflow-scrolling: touch; /* Added for ultra-smooth mobile scrolling */
+        }
+
+        :root {
+            --primary: #f58220; 
+            --bg: #ffffff;
+            --text-main: #0f172a;
+            --text-sub: #64748b;
+            --card: #f8fafc;
+            --border: rgba(0,0,0,0.06);
+            --glass: rgba(255, 255, 255, 0.7);
+            --nav-bg: rgba(255, 255, 255, 0.85);
+            --ios-shadow: 0 10px 40px -10px rgba(0,0,0,0.1);
+        }
+
+        .dark-mode {
+            --bg: #020617;
+            --text-main: #f8fafc;
+            --text-sub: #94a3b8;
+            --card: rgba(255, 255, 255, 0.02);
+            --border: rgba(255,255,255,0.1);
+            --glass: rgba(2, 6, 23, 0.7);
+            --nav-bg: rgba(2, 6, 23, 0.85);
+            --ios-shadow: 0 10px 40px -10px rgba(0,0,0,0.4);
+        }
+
+        body { 
+            background: var(--bg); 
+            color: var(--text-main); 
+            transition: background 0.5s ease, color 0.5s ease; 
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+
+        * { cursor: none; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; scroll-behavior: smooth; }
+
+        @media (max-width: 768px), (hover: none) and (pointer: coarse) {
+            #c-cursor, #c-follower { display: none !important; opacity: 0 !important; visibility: hidden !important; }
+            * { cursor: auto !important; }
+            
+            /* ADDED: Immediate touch feedback for mobile for faster feel */
+            a:active, button:active, .feature-card:active, .nav-item:active, .nav-link:active, .btn-premium:active {
+                transform: scale(0.96) !important;
+                transition: transform 0.05s ease-out !important;
+            }
+            
+            body {
+                overscroll-behavior-y: none; /* Prevents pull-to-refresh lag */
+            }
+        }
+
+        #c-cursor { width: 8px; height: 8px; background: var(--primary); border-radius: 50%; position: fixed; top: 0; left: 0; pointer-events: none; z-index: 10000; will-change: transform; }
+        #c-follower { width: 40px; height: 40px; border: 1px solid var(--primary); border-radius: 50%; position: fixed; top: 0; left: 0; pointer-events: none; z-index: 9999; will-change: transform; transition: transform 0.1s ease-out; }
+
+        .nav-glass { background: var(--nav-bg); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border-bottom: 1px solid var(--border); }
+
+        .nav-link { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-main); transition: 0.3s; position: relative; cursor: pointer; }
+        .nav-link::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 0; height: 2px; background: var(--primary); transition: 0.3s; }
+        .nav-link:hover::after { width: 100%; }
+
+        .hero-title { background: linear-gradient(to right, var(--text-main), var(--primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: clamp(2.5rem, 8vw, 6rem); }
+        
+        .feature-card { background: var(--card); border: 1px solid var(--border); border-radius: 32px; transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; }
+        .feature-card:hover { transform: translateY(-12px); border-color: var(--primary); box-shadow: 0 40px 80px -20px rgba(245, 130, 32, 0.15); }
+
+        .btn-premium { background: var(--primary); color: white; padding: 14px 30px; border-radius: 18px; font-weight: 700; font-size: 11px; letter-spacing: 1.2px; text-transform: uppercase; transition: box-shadow 0.35s ease; display: inline-block; position: relative; z-index: 1; text-align: center; }
+        .btn-premium:hover { box-shadow: 0 20px 40px rgba(245, 130, 32, 0.3); }
+
+        /* Advanced Page Loader */
+        #page-loader {
+            position: fixed; inset: 0; background: var(--bg); z-index: 99999;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none; transition: 0.5s ease-in-out;
+        }
+        #page-loader.active { opacity: 1; pointer-events: auto; }
+        .loader-logo { width: 180px; margin-bottom: 25px; animation: pulse 2s infinite; }
+        /* ── Banking Finance Orbit Loader ── */
+        .fin-loader { position: relative; width: 110px; height: 110px; display: flex; align-items: center; justify-content: center; }
+        .fin-loader::before { content: ''; position: absolute; width: 96px; height: 96px; border-radius: 50%; border: 1px dashed rgba(245,130,32,0.22); animation: fin-ring-breathe 2.4s ease-in-out infinite; }
+        .fin-loader::after { content: ''; position: absolute; width: 70px; height: 70px; border-radius: 50%; border: 1px dashed rgba(245,130,32,0.10); }
+        .fin-orbit { position: absolute; width: 100%; height: 100%; animation: fin-spin 5s linear infinite; }
+        .fin-icon { position: absolute; top: 50%; left: 50%; width: 26px; height: 26px; margin: -13px; display: flex; align-items: center; justify-content: center; transform: rotate(calc(var(--n) * 60deg)) translateY(-46px); color: var(--primary); background: var(--bg); border: 1.5px solid rgba(245,130,32,0.30); border-radius: 50%; font-size: 10px; transition: 0.3s; }
+        .fin-icon i { animation: fin-counter 5s linear infinite; }
+        .fin-icon:nth-child(1) { border-color: rgba(245,130,32,0.65); box-shadow: 0 0 8px rgba(245,130,32,0.25); }
+        .fin-icon:nth-child(1) i { animation-delay: 0s; }
+        .fin-icon:nth-child(2) i { animation-delay: 0s; }
+        .fin-icon:nth-child(3) i { animation-delay: 0s; }
+        .fin-icon:nth-child(4) i { animation-delay: 0s; }
+        .fin-icon:nth-child(5) i { animation-delay: 0s; }
+        .fin-icon:nth-child(6) i { animation-delay: 0s; }
+
+        .fin-core { width: 26px; height: 26px; background: var(--primary); border-radius: 50%; z-index: 3; display: flex; align-items: center; justify-content: center; color: white; font-size: 10px; animation: fin-core-pulse 1.6s ease-in-out infinite; }
+        .fin-label { margin-top: 18px; font-size: 9px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: var(--text-sub); animation: fin-label-blink 1.6s ease-in-out infinite; }
+        @keyframes fin-spin { to { transform: rotate(360deg); } }
+        @keyframes fin-counter { to { transform: rotate(-360deg); } }
+        @keyframes fin-core-pulse { 0%,100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(245,130,32,0.55); } 50% { transform: scale(1.3); box-shadow: 0 0 0 12px rgba(245,130,32,0); } }
+        @keyframes fin-ring-breathe { 0%,100% { opacity:0.4; transform:scale(1); } 50% { opacity:0.9; transform:scale(1.04); } }
+
+        @keyframes fin-label-blink { 0%,100% { opacity:0.45; } 50% { opacity:1; } }
+        @keyframes pulse { 0%, 100% { opacity: 0.8; transform: scale(1); } 50% { opacity: 1; transform: scale(1.05); } }
+
+        /* Professional Smart Detail Window (Modal) */
+        #detail-modal {
+            position: fixed; inset: 0; z-index: 9999; display: flex; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            background: rgba(0, 0, 0, 0.2);
+        }
+        #detail-modal.active { opacity: 1; pointer-events: auto; }
+        .modal-content {
+            background: var(--nav-bg); border: 1px solid var(--border); width: 90%; max-width: 500px;
+            padding: 40px; border-radius: 40px; transform: scale(0.9) translateY(20px); transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 30px 60px -12px rgba(0,0,0,0.25); text-align: center;
+        }
+        #detail-modal.active .modal-content { transform: scale(1) translateY(0); }
+
+        /* Mobile Adjustments */
+        #mobile-sidebar { position: fixed; top: 0; right: -100%; width: 300px; height: 100vh; background: var(--nav-bg); backdrop-filter: blur(40px); z-index: 2000; transition: 0.6s cubic-bezier(0.77, 0, 0.175, 1); padding: 40px 30px; border-left: 1px solid var(--border); }
+        #mobile-sidebar.active { right: 0; }
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.3); opacity: 0; pointer-events: none; transition: 0.4s; z-index: 1999; }
+        .overlay.active { opacity: 1; pointer-events: auto; }
+
+        /* Mobile Bottom Nav Styles (UPDATED: Docked to bottom, non-floating) */
+        .mobile-bottom-nav { position: fixed; bottom: 0; left: 0; transform: none; width: 100%; max-width: 100%; background: var(--nav-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-top: 1px solid var(--border); border-radius: 24px 24px 0 0; display: flex; justify-content: space-around; align-items: center; padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); z-index: 1001; box-shadow: 0 -5px 25px -5px rgba(0,0,0,0.1); }
+        .dark-mode .mobile-bottom-nav { box-shadow: 0 -5px 25px -5px rgba(0,0,0,0.4); }
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--text-sub); flex: 1; transition: color 0.2s ease; cursor: pointer; text-decoration: none; -webkit-tap-highlight-color: transparent; }
+        .nav-item.active { color: var(--primary); }
+
+        .reveal { opacity: 0; transform: translateY(40px); transition: 1.2s cubic-bezier(0.2, 0.8, 0.2, 1); }
+        .reveal-visible { opacity: 1; transform: translateY(0); }
+
+        .premium-footer { background: var(--card); border-top: 1px solid var(--border); padding: 80px 0 140px 0; }
+
+        /* ═══════════════════════════════════════════════════════════════
+           ── ADDED: Global Smooth Interaction & Stability Improvements ──
+           ═══════════════════════════════════════════════════════════════ */
+
+        /* btn-premium: stable, no movement */
+        .btn-premium {
+            transition: box-shadow 0.35s ease !important;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+        .btn-premium:active {
+            transform: scale(0.97) !important;
+            transition: transform 0.08s ease !important;
+        }
+
+        /* Nav links / items: hardware-accelerated, no jitter */
+        .nav-link {
+            will-change: transform;
+            backface-visibility: hidden;
+        }
+        .nav-item {
+            will-change: auto;
+            transition: color 0.3s ease;
+            backface-visibility: hidden;
+        }
+        .nav-item span { font-size: 10px; font-weight: 600; }
+
+        /* Eliminate tap flash on every interactive element */
+        a, button, [onclick], .feature-card, .nav-item, .nav-link, .btn-premium {
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+
+        /* Feature cards: GPU layer */
+        .feature-card { will-change: transform; }
+
+        /* Touch devices: disable hover transforms (prevents jarring jump on tap) */
+        @media (max-width: 768px), (hover: none) and (pointer: coarse) {
+            .feature-card:hover {
+                transform: none !important;
+                border-color: var(--border) !important;
+                box-shadow: none !important;
+            }
+            .btn-premium:hover {
+                transform: none !important;
+                box-shadow: none !important;
+            }
+        }
+
+        /* ── EXCLUSIVE ADDITION: Professional Mobile Header Optimization ── */
+        @media (max-width: 768px) {
+            nav.nav-glass {
+                padding: 10px 14px !important;
+            }
+            nav.nav-glass img {
+                height: 28px !important; /* Elegant compact scale to prevent crowding */
+            }
+            nav.nav-glass #theme-toggle {
+                width: 34px !important;
+                height: 34px !important;
+                border-radius: 10px !important;
+                display: inline-flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                font-size: 12px !important;
+            }
+            nav.nav-glass .btn-premium {
+                padding: 6px 12px !important;
+                font-size: 8.5px !important;
+                border-radius: 10px !important;
+                letter-spacing: 0.5px !important;
+            }
+            nav.nav-glass .max-w-\[1400px\] > .flex {
+                gap: 6px !important;
+            }
+            nav.nav-glass .flex.items-center.gap-4 {
+                gap: 6px !important;
+            }
+            nav.nav-glass .flex.items-center.gap-2 {
+                gap: 4px !important;
+            }
+            /* Upgrading hamburger into a beautiful balanced button matching theme toggle */
+            nav.nav-glass button[onclick="toggleSidebar()"] {
+                margin-left: 0px !important;
+                font-size: 14px !important;
+                width: 34px !important;
+                height: 34px !important;
+                display: inline-flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                background: var(--card) !important;
+                border: 1px solid var(--border) !important;
+                border-radius: 10px !important;
+                color: var(--text-main) !important;
+                transition: 0.2s ease;
+            }
+        }
+
+    </style>
+</head>
+<body class="light">
+    <div id="page-loader">
+        <img src="{{ url_for('static', filename='FinoraXpense_Logo.png') }}" class="loader-logo" alt="Logo">
+        <div class="fin-loader">
+            <div class="fin-orbit">
+                <span class="fin-icon" style="--n:0"><i class="fas fa-credit-card"></i></span>
+                <span class="fin-icon" style="--n:1"><i class="fas fa-chart-line"></i></span>
+                <span class="fin-icon" style="--n:2"><i class="fas fa-building-columns"></i></span>
+                <span class="fin-icon" style="--n:3"><i class="fas fa-coins"></i></span>
+                <span class="fin-icon" style="--n:4"><i class="fas fa-wallet"></i></span>
+                <span class="fin-icon" style="--n:5"><i class="fas fa-shield-halved"></i></span>
+            </div>
+            <div class="fin-core"><i class="fas fa-bangladeshi-taka-sign"></i></div>
+        </div>
+        <p class="fin-label">Securing your vault</p>
+    </div>
+
+    <div id="detail-modal">
+        <div class="modal-content">
+            <div id="modal-icon" class="text-4xl text-orange-500 mb-6"></div>
+            <h3 id="modal-title" class="text-2xl font-bold mb-4"></h3>
+            <div id="modal-desc" class="text-[var(--text-sub)] leading-relaxed mb-8"></div>
+            <button onclick="closeModal()" class="btn-premium w-full">Close Preview</button>
+        </div>
+    </div>
+
+    <div id="c-cursor"></div>
+    <div id="c-follower"></div>
+    <div class="overlay" id="nav-overlay"></div>
+    
+    <div id="mobile-sidebar">
+        <div class="flex justify-between items-center mb-10">
+            <img src="{{ url_for('static', filename='FinoraXpense_Logo.png') }}" class="h-8">
+            <button onclick="toggleSidebar()" class="text-xl"><i class="fas fa-times"></i></button>
+        </div>
+        <nav class="flex flex-col gap-6">
+            <a onclick="toggleSidebar(); openDetail('Our Platform', 'FinoraXpense provides a multi-tenant cloud architecture designed for seamless financial orchestration and AI-driven insights.', 'fa-layer-group')" class="nav-link !text-lg">Platform</a>
+            <a onclick="toggleSidebar(); openDetail('Security Infrastructure', 'Your data is protected by military-grade AES-256 encryption, multi-factor authentication, and biometric vaulting.', 'fa-shield-halved')" class="nav-link !text-lg">Security</a>
+            <a onclick="toggleSidebar(); openDetail('Success Stories', 'Explore how thousands of premium users scaled their net worth by 40% within the first year using our AI tools.', 'fa-chart-pie')" class="nav-link !text-lg">Case Studies</a>
+            <a onclick="toggleSidebar(); openDetail('About Finora', 'We are a team of financial engineers and AI researchers dedicated to making wealth management accessible and beautiful.', 'fa-building-columns')" class="nav-link !text-lg">Company</a>
+            <hr class="border-[var(--border)]">
+            <a href="{{ url_for('login') }}" class="nav-link !text-lg !text-orange-500">Login</a>
+            <a href="{{ url_for('register') }}" class="btn-premium">Get Started</a>
+        </nav>
+    </div>
+
+    <nav class="nav-glass sticky top-0 z-50 px-6 md:px-12 py-4">
+        <div class="max-w-[1400px] mx-auto flex justify-between items-center">
+            <a href="{{ url_for('home') }}"><img src="{{ url_for('static', filename='FinoraXpense_Logo.png') }}" alt="Logo" class="h-10 md:h-12 hover:scale-105 transition-transform"></a>
+            <div class="flex items-center gap-4 md:gap-10">
+                <div class="hidden lg:flex gap-8">
+                    <a onclick="openDetail('Our Platform', 'FinoraXpense provides a multi-tenant cloud architecture designed for seamless financial orchestration and AI-driven insights.', 'fa-layer-group')" class="nav-link">Platform</a>
+                    <a onclick="openDetail('Security Infrastructure', 'Your data is protected by military-grade AES-256 encryption, multi-factor authentication, and biometric vaulting.', 'fa-shield-halved')" class="nav-link">Security</a>
+                    <a onclick="openDetail('Success Stories', 'Explore how thousands of premium users scaled their net worth by 40% within the first year using our AI tools.', 'fa-chart-pie')" class="nav-link">Case Studies</a>
+                    <a onclick="openDetail('About Finora', 'We are a team of financial engineers and AI researchers dedicated to making wealth management accessible and beautiful.', 'fa-building-columns')" class="nav-link">Company</a>
+                </div>
+                <button id="theme-toggle" class="w-10 h-10 rounded-xl bg-[var(--card)] border border-[var(--border)] text-orange-500"><i class="fas fa-moon"></i></button>
+                <div class="flex items-center gap-2">
+                    <a href="{{ url_for('login') }}" class="hidden sm:block px-4 py-3 text-[10px] font-bold uppercase">Login</a>
+                    <a href="{{ url_for('register') }}" class="btn-premium !py-2.5 !px-5 !text-[10px]">Get Started</a>
+                    <button onclick="toggleSidebar()" class="lg:hidden ml-2 text-xl"><i class="fas fa-bars-staggered"></i></button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="mobile-bottom-nav md:hidden">
+        <a href="{{ url_for('home') }}" class="nav-item active"><i class="fas fa-home"></i><span>Home</span></a>
+        <a href="{{ url_for('login') }}" class="nav-item"><i class="fas fa-user-lock"></i><span>Login</span></a>
+        <a href="{{ url_for('register') }}" class="nav-item"><i class="fas fa-plus-circle"></i><span>Register</span></a>
+    </div>
+
+    <main class="max-w-7xl mx-auto px-6 pt-16 md:pt-24 pb-32 text-center">
+        <div class="reveal inline-flex items-center gap-3 px-5 py-2 bg-orange-500/5 border border-orange-500/20 rounded-full mb-8">
+            <span class="text-[9px] md:text-[10px] font-bold uppercase tracking-[0.2em] text-orange-600" id="badge-text">Intelligence Meets Finance</span>
+        </div>
+        <h1 class="reveal hero-title font-extrabold mb-6 tracking-tighter leading-[1.1]" id="hero-heading">Smart Tracking <br> Effortless Wealth</h1>
+        <p class="reveal text-[var(--text-sub)] max-w-2xl mx-auto text-base md:text-xl font-medium mb-12" id="hero-subtext">Experience the next generation of financial management. FinoraXpense combines AI power with premium aesthetics for your ultimate growth.</p>
+        
+        <div class="reveal mb-24"><a href="{{ url_for('register') }}" class="btn-premium">Create your account</a></div>
+
+
+        <div class="text-left mb-20">
+            <h2 class="reveal text-2xl md:text-3xl font-extrabold mb-10 flex items-center gap-4"><span class="w-10 h-1 bg-orange-500 rounded-full"></span>Core Features</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="reveal feature-card p-8 group" onclick="openDetail('User Auth', 'Secure Registration and real-time data sync across all your premium devices.', 'fa-fingerprint')">
+                    <div class="w-12 h-12 bg-orange-500/10 rounded-xl flex items-center justify-center mb-6 text-orange-500 group-hover:bg-orange-500 group-hover:text-white transition-all"><i class="fa-solid fa-fingerprint text-xl"></i></div>
+                    <h3 class="text-lg font-bold mb-3">User Auth & Sync</h3>
+                    <p class="text-[var(--text-sub)] text-sm">Secure Registration/Login and real-time data synchronization across all devices.</p>
+                </div>
+                <div class="reveal feature-card p-8 group" onclick="openDetail('Income/Expense', 'Complete control over your finances with intelligent CRUD operations.', 'fa-file-invoice-dollar')">
+                    <div class="w-12 h-12 bg-orange-500/10 rounded-xl flex items-center justify-center mb-6 text-orange-500 group-hover:bg-orange-500 group-hover:text-white transition-all"><i class="fas fa-file-invoice-dollar text-xl"></i></div>
+                    <h3 class="text-lg font-bold mb-3">Income/Expense CRUD</h3>
+                    <p class="text-[var(--text-sub)] text-sm">Core functionality to Add, Read, Update, and Delete financial entries effortlessly.</p>
+                </div>
+                <div class="reveal feature-card p-8 group" onclick="openDetail('AI Categorization', 'Let our proprietary AI sort your spending patterns with 99.9% accuracy.', 'fa-brain')">
+                    <div class="w-12 h-12 bg-orange-500/10 rounded-xl flex items-center justify-center mb-6 text-orange-500 group-hover:bg-orange-500 group-hover:text-white transition-all"><i class="fas fa-brain text-xl"></i></div>
+                    <h3 class="text-lg font-bold mb-3">AI Categorization</h3>
+                    <p class="text-[var(--text-sub)] text-sm">Automated transaction sorting using advanced machine learning algorithms.</p>
+                </div>
+                <div class="reveal feature-card p-8 group" onclick="openDetail('Budget Tracking', 'Set limits and get smart alerts before you overspend.', 'fa-bullseye')">
+                    <div class="w-12 h-12 bg-orange-500/10 rounded-xl flex items-center justify-center mb-6 text-orange-500 group-hover:bg-orange-500 group-hover:text-white transition-all"><i class="fas fa-bullseye text-xl"></i></div>
+                    <h3 class="text-lg font-bold mb-3">Budget Tracking</h3>
+                    <p class="text-[var(--text-sub)] text-sm">Set monthly limits and monitor your spending progress with real-time visual alerts.</p>
+                </div>
+                <div class="reveal feature-card p-8 group" onclick="openDetail('Savings Goals', 'Plan your dream future with milestone-based savings tracking.', 'fa-sack-dollar')">
+                    <div class="w-12 h-12 bg-orange-500/10 rounded-xl flex items-center justify-center mb-6 text-orange-500 group-hover:bg-orange-500 group-hover:text-white transition-all"><i class="fa-solid fa-sack-dollar text-xl"></i></div>
+                    <h3 class="text-lg font-bold mb-3">Savings Goals</h3>
+                    <p class="text-[var(--text-sub)] text-sm">Define your financial targets and track your growth through intuitive milestones.</p>
+                </div>
+                <div class="reveal feature-card p-8 group" onclick="openDetail('Analytics', 'Visualize your wealth growth with international banking standard charts.', 'fa-chart-line')">
+                    <div class="w-12 h-12 bg-orange-500/10 rounded-xl flex items-center justify-center mb-6 text-orange-500 group-hover:bg-orange-500 group-hover:text-white transition-all"><i class="fas fa-chart-line text-xl"></i></div>
+                    <h3 class="text-lg font-bold mb-3">Analytics & Alerts</h3>
+                    <p class="text-[var(--text-sub)] text-sm">Interactive charts and proactive notifications to keep your finances on track.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-left bg-orange-500/5 rounded-[40px] p-10 border border-orange-500/10 mb-20">
+            <h2 class="reveal text-2xl font-bold mb-8 text-orange-600">System Excellence</h2>
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="reveal flex flex-col md:flex-row gap-4 items-start cursor-help" onclick="openDetail('Military Security', 'AES-256 Encryption ensuring your data never leaves your secure vault.', 'fa-shield-halved')">
+                    <i class="fas fa-shield-halved mt-1 text-orange-500 text-lg"></i>
+                    <div><h4 class="font-bold text-[10px] md:text-sm uppercase tracking-wider mb-1">Security</h4><p class="text-[10px] text-[var(--text-sub)]">AES-256 Protocol.</p></div>
+                </div>
+                <div class="reveal flex flex-col md:flex-row gap-4 items-start">
+                    <i class="fas fa-server mt-1 text-orange-500 text-lg"></i>
+                    <div><h4 class="font-bold text-[10px] md:text-sm uppercase tracking-wider mb-1">Reliability</h4><p class="text-[10px] text-[var(--text-sub)]">99.9% Uptime.</p></div>
+                </div>
+                <div class="reveal flex flex-col md:flex-row gap-4 items-start">
+                    <i class="fas fa-cloud mt-1 text-orange-500 text-lg"></i>
+                    <div><h4 class="font-bold text-[10px] md:text-sm uppercase tracking-wider mb-1">Scalability</h4><p class="text-[10px] text-[var(--text-sub)]">Cloud-Native Architecture.</p></div>
+                </div>
+                <div class="reveal flex flex-col md:flex-row gap-4 items-start">
+                    <i class="fas fa-mobile-screen mt-1 text-orange-500 text-lg"></i>
+                    <div><h4 class="font-bold text-[10px] md:text-sm uppercase tracking-wider mb-1">UI/UX</h4><p class="text-[10px] text-[var(--text-sub)]">Premium Glassmorphism.</p></div>
+                </div>
+            </div>
+        </div>
+
+
+    </main>
+
+    <footer class="premium-footer">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
+                <div class="col-span-1 md:col-span-2">
+                    <img src="{{ url_for('static', filename='FinoraXpense_Logo.png') }}" alt="Logo" class="h-10 mb-6">
+                    <p class="text-[var(--text-sub)] max-w-sm mb-8 leading-relaxed">Revolutionizing financial intelligence with cutting-edge AI and premium aesthetics. Your journey to effortless wealth starts here.</p>
+                </div>
+                <div>
+                    <h4 class="font-bold text-sm uppercase tracking-widest mb-6">Quick Links</h4>
+                    <ul class="space-y-4">
+                        <li><a href="{{ url_for('home') }}" class="footer-link hover:text-orange-500 transition-colors">Home Overview</a></li>
+                        <li><a onclick="openDetail('Secure Login', 'Access your dashboard using our encrypted gateway.', 'fa-user-lock')" class="footer-link hover:text-orange-500 transition-colors cursor-pointer">Secure Login</a></li>
+                        <li><a href="{{ url_for('register') }}" class="footer-link hover:text-orange-500 transition-colors">Join Finora</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold text-sm uppercase tracking-widest mb-6">Contact Us</h4>
+                    <p class="text-[var(--text-sub)] text-sm">support@finoraxpense.com</p>
+                    <p class="text-[var(--text-sub)] text-sm">Chittagong, Bangladesh</p>
+                </div>
+            </div>
+            <div class="pt-8 border-t border-[var(--border)] text-center">
+                <p class="text-[9px] font-bold uppercase tracking-[0.3em] text-[var(--text-sub)]">© 2026 Finora Xpense | Built for Excellence</p>
+                <p class="text-[9px] font-bold uppercase tracking-[0.3em] text-[var(--text-sub)] mt-2">Developed By : Team Finora</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Sidebar & Overlay
+        function toggleSidebar() {
+            document.getElementById('mobile-sidebar').classList.toggle('active');
+            document.getElementById('nav-overlay').classList.toggle('active');
+        }
+        document.getElementById('nav-overlay').addEventListener('click', toggleSidebar);
+
+        // Smart Professional Transition (Modified to allow openDetail clicks)
+        document.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', e => {
+                const href = link.getAttribute('href');
+                const onclick = link.getAttribute('onclick');
+                
+                // If it has an onclick (modal trigger) and no real href, don't trigger loader
+                if (onclick && (!href || href === '#')) return;
+
+                if (href && href !== '#' && !href.startsWith('http')) {
+                    e.preventDefault();
+                    document.getElementById('page-loader').classList.add('active');
+                    setTimeout(() => { window.location.href = href; }, 800);
+                }
+            });
+        });
+
+        // Detail Modal Logic (Smart Blurred Window)
+        function openDetail(title, desc, iconClass) {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-desc').innerHTML = desc;
+            document.getElementById('modal-icon').innerHTML = `<i class="fas ${iconClass}"></i>`;
+            document.getElementById('detail-modal').classList.add('active');
+        }
+        function closeModal() {
+            document.getElementById('detail-modal').classList.remove('active');
+        }
+
+        // Theme Toggle
+        const themeBtn = document.getElementById('theme-toggle');
+        themeBtn.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            const isDark = document.body.classList.contains('dark-mode');
+            localStorage.setItem('finance_theme', isDark ? 'dark' : 'light');
+            themeBtn.innerHTML = isDark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+        });
+
+        // Cursor & Follower
+        const cursor = document.getElementById('c-cursor');
+        const follower = document.getElementById('c-follower');
+        
+        // ADDED: Mobile check to completely disable JS cursor logic and remove elements for max performance
+        const isTouchDevice = window.matchMedia("(hover: none) and (pointer: coarse)").matches || ('ontouchstart' in window) || navigator.maxTouchPoints > 0 || window.innerWidth <= 768;
+
+        if (isTouchDevice) {
+            if (cursor) cursor.remove();
+            if (follower) follower.remove();
+        } else {
+            // ORIGINAL CODE RETAINED EXACTLY AS REQUESTED
+            let mouseX = 0, mouseY = 0, fX = 0, fY = 0;
+            document.addEventListener('mousemove', (e) => { 
+                mouseX = e.clientX; mouseY = e.clientY; 
+                cursor.style.transform = `translate3d(${mouseX}px, ${mouseY}px, 0)`; 
+            });
+            function animate() { 
+                fX += (mouseX - fX) * 0.15; fY += (mouseY - fY) * 0.15; 
+                follower.style.transform = `translate3d(${fX - 16}px, ${fY - 16}px, 0)`; 
+                requestAnimationFrame(animate); 
+            }
+            animate();
+        }
+
+        // Intersection Observer
+        const observer = new IntersectionObserver((entries) => { 
+            entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('reveal-visible'); }); 
+        }, { threshold: 0.15 });
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+        (function initTheme() {
+            try {
+                const saved = localStorage.getItem('finance_theme');
+                if (saved === 'dark') {
+                    document.body.classList.add('dark-mode');
+                    document.getElementById('theme-toggle').innerHTML = '<i class="fas fa-sun"></i>';
+                } else {
+                    document.body.classList.remove('dark-mode');
+                    document.getElementById('theme-toggle').innerHTML = '<i class="fas fa-moon"></i>';
+                }
+                // Remove the temporary flash-prevention style from <html>
+                document.documentElement.removeAttribute('style');
+            } catch(e) {}
+        })();
+
+    </script>
+</body>
+</html>
