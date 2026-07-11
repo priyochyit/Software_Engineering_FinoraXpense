@@ -88,7 +88,6 @@ FinoraXpense/
 |-- financial_health_model.pkl        # Output of train_model.py (generated locally, see AI section below)
 |-- nlp_vectorizer.pkl                # Output of train_nlp.py
 |-- nlp_category_model.pkl            # Output of train_nlp.py
-|-- .env                              # Secret environment variables — never commit this
 |-- .env.example                      # Safe template for environment variables
 |-- .gitignore                        # Git ignore rules
 |-- requirements.txt                  # Python package dependencies
