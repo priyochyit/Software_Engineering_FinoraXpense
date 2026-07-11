@@ -66,7 +66,7 @@ FinoraXpense is a full-stack personal finance management web application built w
 |-------------------|--------------------------------------------------------------|
 | Backend           | Python 3.10+, Flask                                          |
 | Database          | PostgreSQL hosted on Neon, psycopg2 with connection pooling  |
-| Machine Learning  | scikit-learn — `MultinomialNB` + `HashingVectorizer` for categorization, `RandomForestClassifier` for financial-health scoring |
+| Machine Learning  | scikit-learn : `MultinomialNB` + `HashingVectorizer` for categorization, `RandomForestClassifier` for financial-health scoring |
 | Frontend          | HTML5, Tailwind CSS (CDN), Font Awesome 6.4                  |
 | Charts            | Chart.js                                                      |
 | Templating        | Jinja2                                                        |
